@@ -2,7 +2,6 @@ plugins {
     java
     application
     id("org.jetbrains.kotlin.jvm") version "2.1.20"
-    id("org.javamodularity.moduleplugin") version "1.8.15"
     id("org.openjfx.javafxplugin") version "0.1.0"
     id("org.beryx.jlink") version "2.25.0"
 }
@@ -12,6 +11,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 val junitVersion = "5.12.1"
@@ -22,7 +22,6 @@ tasks.withType<JavaCompile> {
 }
 
 application {
-    mainModule.set("com.fsp.plantapp")
     mainClass.set("com.fsp.plantapp.PlantApp")
 }
 kotlin {
@@ -38,6 +37,7 @@ dependencies {
     implementation("org.controlsfx:controlsfx:11.2.3")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testImplementation("org.junit.platform:junit-platform-launcher:6.0.3")
     implementation("net.sourceforge.plantuml:plantuml:1.2026.0")
 }
 
