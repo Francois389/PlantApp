@@ -1,6 +1,8 @@
 package com.fsp.plantapp.editor
 
-import org.junit.jupiter.api.Assertions.*
+import com.fsp.plantapp.diagram.DiagramService
+import com.fsp.plantapp.diagram.InMemoryDiagramRepository
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class EditorViewModelTest {
@@ -8,7 +10,7 @@ class EditorViewModelTest {
     @Test
     fun `title update correctly`() {
         // Given a view model with a simple diagram
-        val viewModel = EditorViewModel()
+        val viewModel = EditorViewModel(DiagramService(InMemoryDiagramRepository()))
         val title = "Titre"
         val simpleDiagram = """
             @startuml;

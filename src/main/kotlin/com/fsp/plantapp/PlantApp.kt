@@ -1,6 +1,7 @@
 package com.fsp.plantapp
 
-import com.fsp.plantapp.Screen.*
+import com.fsp.plantapp.Screen.EditorScreen
+import com.fsp.plantapp.Screen.ExportScreen
 import com.fsp.plantapp.diagram.DiagramService
 import com.fsp.plantapp.diagram.InMemoryDiagramRepository
 import com.fsp.plantapp.editor.EditorView
