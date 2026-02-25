@@ -19,32 +19,25 @@ class EditorViewModel(
     private val diagramService: DiagramService
 ) {
     val exportPaneVisible: Property<Boolean> = SimpleBooleanProperty(false)
-    val textSource = SimpleStringProperty(
-        """
-        @startuml;
-        title Titre
-        Alice -> Bob: Hello
-        Bob -> Alice: Hi!
-        @enduml
-    """.trimIndent()
-    )
-    val imageOutput: Property<ByteArray> = SimpleObjectProperty()
     val errorText = SimpleStringProperty()
+
+    val diagramSourceText = SimpleStringProperty()
+    val imageOutput: Property<ByteArray> = SimpleObjectProperty()
     val diagramTitle = SimpleStringProperty()
 
     init {
-        textSource.addListener { _, _, _ ->
-            diagramService.setDiagramSource(textSource.value)
+        diagramSourceText.addListener { _, _, _ ->
+            diagramService.setDiagramSource(diagramSourceText.value)
             diagramService.getDiagram().let {
                 imageOutput.value = it.diagrammImage
                 diagramTitle.value = it.diagrammTitle
-                textSource.value = it.diagrammSource
+                diagramSourceText.value = it.diagrammSource
             }
         }
         diagramService.getDiagram().let {
             imageOutput.value = it.diagrammImage
             diagramTitle.value = it.diagrammTitle
-            textSource.value = it.diagrammSource
+            diagramSourceText.value = it.diagrammSource
         }
     }
 
@@ -56,7 +49,7 @@ class EditorViewModel(
     fun saveDiagramToFile(path: String) {
         try {
             // Re-générer un InputStream frais (celui de imageOutput a peut-être déjà été lu)
-            val source = textSource.value
+            val source = diagramSourceText.value
             val reader = SourceStringReader(source)
             val outputStream = ByteArrayOutputStream()
             reader.outputImage(outputStream)

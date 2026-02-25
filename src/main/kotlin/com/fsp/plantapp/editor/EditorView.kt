@@ -30,7 +30,7 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
             items.addAll(
                 VBox().apply {
                     val textArea = TextArea().apply {
-                        textProperty().bindBidirectional(viewModel.textSource)
+                        textProperty().bindBidirectional(viewModel.diagramSourceText)
                         prefRowCount = 10
                     }
                     setVgrow(textArea, Priority.ALWAYS)
