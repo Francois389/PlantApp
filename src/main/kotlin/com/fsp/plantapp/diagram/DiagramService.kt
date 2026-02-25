@@ -44,9 +44,9 @@ class DiagramService(
     private fun updateTitle(textSource: String): String {
         return textSource
             .split("\n")
-            .first { it.contains("title") }
-            .substringAfter("title")
-            .trim()
+            .firstOrNull { it.contains("title") }
+            ?.substringAfter("title")
+            ?.trim() ?: ""
     }
 
     fun getDiagram(): PlantUMLDiagram {
