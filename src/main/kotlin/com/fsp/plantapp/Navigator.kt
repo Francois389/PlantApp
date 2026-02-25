@@ -1,12 +1,16 @@
 package com.fsp.plantapp
 
-import com.fsp.plantapp.Screen
 import javafx.scene.Parent
 import javafx.stage.Stage
 
-class Navigator(val primaryStage: Stage) {
+object Navigator {
+    private lateinit var primaryStage: Stage
     private var currentScreen: Screen? = null
     private val viewCache = mutableMapOf<Screen, Parent>()
+
+    fun setup(stage: Stage) {
+        primaryStage = stage
+    }
 
     lateinit var viewFactory: (Screen) -> Parent
 
@@ -23,5 +27,9 @@ class Navigator(val primaryStage: Stage) {
             width = screen.width
             height = screen.heigth
         }
+    }
+
+    fun getScreen(screen: Screen): Parent {
+        return viewCache.getOrPut(screen) { viewFactory(screen) }
     }
 }

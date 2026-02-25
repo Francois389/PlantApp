@@ -1,21 +1,24 @@
-package com.fsp.plantapp.main
+package com.fsp.plantapp.editor
 
+import com.fsp.plantapp.diagram.DiagramService
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import net.sourceforge.plantuml.SourceStringReader
+import org.w3c.dom.Element
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import javax.imageio.ImageIO
-import javax.imageio.ImageTypeSpecifier
 import java.io.File
 import javax.imageio.IIOImage
-import org.w3c.dom.Element
+import javax.imageio.ImageIO
+import javax.imageio.ImageTypeSpecifier
 import javax.imageio.metadata.IIOMetadataNode
 import javax.xml.parsers.DocumentBuilderFactory
 
-class MainViewModel {
-
+class EditorViewModel(
+    private val diagramService: DiagramService
+) {
+    val exportPaneVisible: Property<Boolean> = SimpleBooleanProperty(false)
     val textSource = SimpleStringProperty(
         """
         @startuml;
@@ -25,42 +28,30 @@ class MainViewModel {
         @enduml
     """.trimIndent()
     )
-    val imageOutput: Property<InputStream> = SimpleObjectProperty()
+    val imageOutput: Property<ByteArray> = SimpleObjectProperty()
     val errorText = SimpleStringProperty()
     val diagramTitle = SimpleStringProperty()
 
     init {
         textSource.addListener { _, _, _ ->
-            renderDiagram()
-            updateTitle()
+            diagramService.setDiagramSource(textSource.value)
+            diagramService.getDiagram().let {
+                imageOutput.value = it.diagrammImage
+                diagramTitle.value = it.diagrammTitle
+                textSource.value = it.diagrammSource
+            }
         }
-        renderDiagram()
-        updateTitle()
-    }
-
-    private fun updateTitle() {
-        diagramTitle.value = textSource.value
-            .split("\n")
-            .first { it.contains("title") }
-            .substringAfter("title")
-            .trim()
-    }
-
-    fun renderDiagram() {
-        try {
-            val source = textSource.value
-            val reader = SourceStringReader(source)
-
-            val outputStream = ByteArrayOutputStream()
-            reader.outputImage(outputStream)
-
-            val inputStream = outputStream.toByteArray().inputStream()
-            imageOutput.value = inputStream
-            errorText.value = ""
-        } catch (e: Exception) {
-            errorText.value = e.message
+        diagramService.getDiagram().let {
+            imageOutput.value = it.diagrammImage
+            diagramTitle.value = it.diagrammTitle
+            textSource.value = it.diagrammSource
         }
     }
+
+    fun regenerateDiagram() {
+        diagramService.regenerateDiagramImage()
+    }
+
 
     fun saveDiagramToFile(path: String) {
         try {
@@ -105,5 +96,10 @@ class MainViewModel {
             errorText.value = "Erreur lors de la sauvegarde : ${e.message}"
             println(e.message)
         }
+    }
+
+    fun goToExport() {
+        exportPaneVisible.value = exportPaneVisible.value.not()
+        println(exportPaneVisible.value)
     }
 }

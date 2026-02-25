@@ -1,8 +1,12 @@
 package com.fsp.plantapp
 
-import com.fsp.plantapp.Screen.MainScreen
-import com.fsp.plantapp.main.MainView
-import com.fsp.plantapp.main.MainViewModel
+import com.fsp.plantapp.Screen.*
+import com.fsp.plantapp.diagram.DiagramService
+import com.fsp.plantapp.diagram.InMemoryDiagramRepository
+import com.fsp.plantapp.editor.EditorView
+import com.fsp.plantapp.editor.EditorViewModel
+import com.fsp.plantapp.export.ExportView
+import com.fsp.plantapp.export.ExportViewModel
 import javafx.application.Application
 import javafx.scene.Scene
 import javafx.scene.layout.Pane
@@ -10,10 +14,14 @@ import javafx.stage.Stage
 
 class PlantApp : Application() {
     override fun start(stage: Stage) {
-        val navigator = Navigator(stage)
+        val diagramRepository = InMemoryDiagramRepository()
+        val diagramService = DiagramService(diagramRepository)
+        val navigator = Navigator
+        navigator.setup(stage)
         navigator.viewFactory = { screen ->
             when (screen) {
-                is MainScreen -> MainView(MainViewModel())
+                is EditorScreen -> EditorView(EditorViewModel(diagramService))
+                is ExportScreen -> ExportView(ExportViewModel(diagramService))
             }
         }
 
@@ -23,10 +31,10 @@ class PlantApp : Application() {
             show()
         }
 
-        navigator.navigateTo(MainScreen)
+        navigator.navigateTo(EditorScreen)
     }
 }
-  
+
 fun main() {
     Application.launch(PlantApp::class.java)
 }

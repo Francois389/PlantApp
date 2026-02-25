@@ -1,14 +1,14 @@
-package com.fsp.plantapp.main
+package com.fsp.plantapp.editor
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class MainViewModelTest {
+class EditorViewModelTest {
 
     @Test
     fun `title update correctly`() {
         // Given a view model with a simple diagram
-        val viewModel = MainViewModel()
+        val viewModel = EditorViewModel()
         val title = "Titre"
         val simpleDiagram = """
             @startuml;
