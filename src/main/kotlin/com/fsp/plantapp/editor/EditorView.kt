@@ -2,20 +2,20 @@ package com.fsp.plantapp.editor
 
 import com.fsp.plantapp.Button
 import com.fsp.plantapp.Navigator
-import com.fsp.plantapp.Screen
 import com.fsp.plantapp.Screen.ExportScreen
-import com.fsp.plantapp.diagram.DiagramService
-import com.fsp.plantapp.export.ExportView
-import com.fsp.plantapp.export.ExportViewModel
+import javafx.application.Platform
+import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.SplitPane
 import javafx.scene.control.TextArea
+import javafx.scene.control.ToggleButton
 import javafx.scene.image.ImageView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
+import javafx.scene.layout.VBox.setVgrow
 
 fun ImageView.updateImage(newImage: ByteArray) {
     newImage.inputStream().use { stream ->
@@ -23,9 +23,10 @@ fun ImageView.updateImage(newImage: ByteArray) {
     }
 }
 
-class EditorView(viewModel: EditorViewModel) : VBox() {
+class EditorView(viewModel: EditorViewModel) : SplitPane() {
     init {
-        val splitPane = SplitPane().apply {
+        orientation = Orientation.VERTICAL
+        val editorSplitPane = SplitPane().apply {
             items.addAll(
                 VBox().apply {
                     val textArea = TextArea().apply {
@@ -41,8 +42,11 @@ class EditorView(viewModel: EditorViewModel) : VBox() {
                         textArea,
                         HBox().apply {
                             children.addAll(
-                                Button("Exporter...") {
-                                    viewModel.goToExport()
+                                ToggleButton("Exporter...").apply {
+                                    selectedProperty().bindBidirectional(viewModel.exportPaneVisible)
+                                    setOnAction {
+                                        println("Export button clicked, exportPaneVisible: ${viewModel.exportPaneVisible.value}")
+                                    }
                                 },
                                 Button("Générer le diagramme") {
                                     viewModel.regenerateDiagram()
@@ -63,7 +67,7 @@ class EditorView(viewModel: EditorViewModel) : VBox() {
             )
             setDividerPositions(0.3)
         }
-        setVgrow(splitPane, Priority.ALWAYS)
+        setVgrow(editorSplitPane, Priority.ALWAYS)
 
         val exportPane = Navigator.getScreen(ExportScreen).apply {
             isVisible = false
@@ -72,9 +76,27 @@ class EditorView(viewModel: EditorViewModel) : VBox() {
             visibleProperty().bindBidirectional(viewModel.exportPaneVisible)
         }
 
-        children.addAll(
-            splitPane,
+        viewModel.exportPaneVisible.addListener { _, _, newValue ->
+            updateDividerPostion(newValue)
+        }
+
+        items.addAll(
+            editorSplitPane,
             exportPane
         )
+        Platform.runLater {
+            updateDividerPostion(viewModel.exportPaneVisible.value)
+        }
+    }
+
+    private fun updateDividerPostion(isExportPaneVisiable: Boolean) {
+        if (isExportPaneVisiable) {
+            setDividerPositions(0.7)
+        } else {
+            setDividerPositions(1.0)
+        }
+        // JavaFX ne met pas à jour les positions des dividers immédiatement.
+        // En affichant les positions des dividers, on force JavaFX à les appliquer
+        println("dividerPositions: ${dividerPositions.joinToString(", ")}")
     }
 }

@@ -97,9 +97,4 @@ class EditorViewModel(
             println(e.message)
         }
     }
-
-    fun goToExport() {
-        exportPaneVisible.value = exportPaneVisible.value.not()
-        println(exportPaneVisible.value)
-    }
 }
