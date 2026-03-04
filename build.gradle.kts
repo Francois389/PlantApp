@@ -24,7 +24,7 @@ application {
     mainClass.set("com.fsp.plantapp.PlantApp")
 }
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 javafx {
