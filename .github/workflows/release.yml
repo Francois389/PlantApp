@@ -57,12 +57,14 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           JAVAFX_JARS=$(find ~/.gradle/caches -name "javafx*.jar" | grep -v sources | tr '\n' ':' | sed 's/:$//')
+          MAIN_JAR=$(ls build/jpackage-input/*.jar | grep -v "javafx\|controlsfx\|plantuml\|junit" | head -1 | xargs basename)
+          echo "Main JAR détecté : $MAIN_JAR"
           jpackage \
             --type ${{ matrix.type }} \
             --name PlantApp \
             --app-version ${{ needs.get-version.outputs.version }} \
             --input build/jpackage-input \
-            --main-jar PlantApp-${{ needs.get-version.outputs.version }}.jar \
+            --main-jar "$MAIN_JAR" \
             --main-class com.fsp.plantapp.PlantApp \
             --module-path "$JAVAFX_JARS" \
             --add-modules javafx.controls,javafx.fxml \
@@ -73,12 +75,14 @@ jobs:
         shell: pwsh
         run: |
           $javafxJars = (Get-ChildItem -Recurse "$env:USERPROFILE\.gradle\caches" -Filter "javafx*.jar" | Where-Object { $_.Name -notlike "*sources*" } | Select-Object -ExpandProperty FullName) -join ";"
+          $mainJar = (Get-ChildItem "build/jpackage-input/*.jar" | Where-Object { $_.Name -notmatch "javafx|controlsfx|plantuml|junit" } | Select-Object -First 1).Name
+          Write-Host "Main JAR détecté : $mainJar"
           jpackage `
             --type ${{ matrix.type }} `
             --name PlantApp `
             --app-version ${{ needs.get-version.outputs.version }} `
             --input build/jpackage-input `
-            --main-jar PlantApp-${{ needs.get-version.outputs.version }}.jar `
+            --main-jar "$mainJar" `
             --main-class com.fsp.plantapp.PlantApp `
             --module-path "$javafxJars" `
             --add-modules javafx.controls,javafx.fxml `
