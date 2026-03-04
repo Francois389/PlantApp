@@ -62,6 +62,11 @@ class ExportView(viewModel: ExportViewModel) : VBox() {
             textProperty().bind(viewModel.errorText)
             style = "-fx-fill: red;"
         }
+        val successText = Text().apply {
+            textProperty().bind(viewModel.successText)
+            style = "-fx-fill: green;"
+            // TODO add fading animation to make it disappear after a few seconds
+        }
 
 
         alignment = Pos.TOP_CENTER
@@ -70,7 +75,8 @@ class ExportView(viewModel: ExportViewModel) : VBox() {
             fileNameField,
             destinationDirectoryField,
             exporterBtn,
-            errorText
+            errorText,
+            successText,
         )
     }
 }

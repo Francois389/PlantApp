@@ -1,14 +1,9 @@
 package com.fsp.plantapp.export
 
 import com.fsp.plantapp.diagram.DiagramService
-import com.fsp.plantapp.diagram.PlantUMLDiagram
-import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import net.sourceforge.plantuml.SourceStringReader
 import org.w3c.dom.Element
-import java.io.ByteArrayOutputStream
 import java.io.File
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
@@ -23,20 +18,22 @@ class ExportViewModel(
     val directoryDestination = SimpleStringProperty("")
     val errorText = SimpleStringProperty("")
     val exportValid = SimpleBooleanProperty(false)
+    val successText = SimpleStringProperty("")
 
 
     init {
         fileName.value = exportService.getDiagram().diagrammTitle
         fileName.addListener { _, _, newValue ->
-            updateErrorText()
+            updateFeedbackText()
         }
         directoryDestination.addListener { _, _, newValue ->
-            updateErrorText()
+            updateFeedbackText()
         }
-        updateErrorText()
+        updateFeedbackText()
     }
 
-    private fun updateErrorText() {
+    private fun updateFeedbackText() {
+        successText.value = ""
         if (fileName.value.isEmpty()) {
             exportValid.value = false
             errorText.value = "Erreur : Le nom du fichier ne peut pas être vide."
@@ -89,6 +86,7 @@ class ExportViewModel(
             writer.dispose()
 
             errorText.value = ""
+            successText.value = "Diagramme exporté avec succès à : $path"
         } catch (e: Exception) {
             errorText.value = "Erreur lors de la sauvegarde : ${e.message}"
             println(e.message)
