@@ -41,5 +41,4 @@ bin/
 
 ### Mac OS ###
 .DS_Store
-gradle/wrapper
 /.idea/gradle.xml

@@ -3,7 +3,6 @@ plugins {
     application
     id("org.jetbrains.kotlin.jvm") version "2.1.20"
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("org.beryx.jlink") version "2.25.0"
 }
 
 group = "com.fsp"
@@ -45,10 +44,39 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-jlink {
-    imageZip.set(layout.buildDirectory.file("/distributions/app-${javafx.platform.classifier}.zip"))
-    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
-    launcher {
-        name = "app"
+tasks.register<Copy>("copyDependencies") {
+    dependsOn("jar")
+    from(configurations.runtimeClasspath)
+    from(tasks.named("jar"))
+    into(layout.buildDirectory.dir("jpackage-input"))
+}
+
+tasks.register<Exec>("jpackage") {
+    dependsOn("copyDependencies")
+
+    val buildDir = layout.buildDirectory.get().asFile
+    val inputDir = "$buildDir/jpackage-input"
+    val outputDir = "$buildDir/jpackage-output"
+
+    // Récupère les JARs JavaFX depuis les dépendances résolues
+    val javafxJars = configurations.runtimeClasspath.get()
+    .filter { it.name.contains("javafx") }
+    .joinToString(":") { it.absolutePath }
+
+    doFirst {
+        file(outputDir).deleteRecursively()
+        file(outputDir).mkdirs()
     }
+
+    commandLine(
+        "jpackage",
+        "--type", "app-image",
+        "--name", "PlantApp",
+        "--input", inputDir,
+        "--main-jar", "${project.name}-${project.version}.jar",
+        "--main-class", "com.fsp.plantapp.PlantApp",
+        "--module-path", javafxJars,
+        "--add-modules", "javafx.controls,javafx.fxml",
+        "--dest", outputDir
+    )
 }
