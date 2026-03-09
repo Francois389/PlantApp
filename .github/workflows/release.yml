@@ -2,27 +2,22 @@ name: Build & Release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag de version (ex: v1.0.0)'
+        required: true
   push:
     tags:
       - 'v*.*.*'
 
+# La version est extraite du tag Git (ex: v1.0.0 → 1.0.0)
+env:
+  VERSION: ${{ github.ref_name != 'main' && github.ref_name || github.event.inputs.tag }}
+
 jobs:
 
-  # 1. Récupération de la version
-  get-version:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: thecodemonkey/action-get-gradle-version@master
-        id: version
-        with:
-          file: build.gradle.kts
-
-  # 2. Build multiplateforme
+  # 1. Build multiplateforme
   build:
-    needs: get-version
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -46,6 +41,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Extraire la version depuis le tag
+        id: version
+        shell: bash
+        run: echo "value=${VERSION#v}" >> "$GITHUB_OUTPUT"
+
       - name: Build JAR + dépendances
         run: |
           chmod +x gradlew
@@ -53,12 +53,12 @@ jobs:
 
       - name: Package (Linux / macOS)
         if: runner.os != 'Windows'
-        run: bash .github/scripts/jpackage-unix.sh ${{ matrix.type }} ${{ needs.get-version.outputs.version }}
+        run: bash .github/scripts/jpackage-unix.sh ${{ matrix.type }} ${{ steps.version.outputs.value }}
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: .github/scripts/jpackage-windows.ps1 -Type ${{ matrix.type }} -Version ${{ needs.get-version.outputs.version }}
+        run: .github/scripts/jpackage-windows.ps1 -Type ${{ matrix.type }} -Version ${{ steps.version.outputs.value }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -66,14 +66,19 @@ jobs:
           name: installer-${{ matrix.artifact-name }}
           path: build/jpackage-output/*.${{ matrix.type }}
 
-  # 3. Création de la GitHub Release
+  # 2. Création de la GitHub Release
   release:
-    needs: [get-version, build]
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Extraire la version depuis le tag
+        id: version
+        shell: bash
+        run: echo "value=${VERSION#v}" >> "$GITHUB_OUTPUT"
 
       - name: Télécharger les artefacts
         uses: actions/download-artifact@v4
@@ -84,9 +89,9 @@ jobs:
       - name: Créer la release GitHub
         uses: softprops/action-gh-release@v2
         with:
-          tag_name:   v${{ needs.get-version.outputs.version }}
-          name:       "PlantApp v${{ needs.get-version.outputs.version }}"
-          body:       "## PlantApp v${{ needs.get-version.outputs.version }}"
+          tag_name:   ${{ env.VERSION }}
+          name:       "PlantApp v${{ steps.version.outputs.value }}"
+          body:       "## PlantApp v${{ steps.version.outputs.value }}"
           files:      installers/*
           draft:      false
-          prerelease: ${{ contains(needs.get-version.outputs.version, 'SNAPSHOT') }}
+          prerelease: ${{ contains(env.VERSION, '-') }}

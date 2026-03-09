@@ -5,6 +5,22 @@ TYPE="$1"
 VERSION="$2"
 MAIN_CLASS="com.fsp.plantapp.PlantApp"
 
+# macOS n'accepte que des versions numériques (ex: 1.0.0 ou 1.0.0.1)
+# Les suffixes texte (-SNAPSHOT, -beta...) sont remplacés par un segment numérique
+if [[ "$TYPE" == "dmg" && "$VERSION" == *-* ]]; then
+  SUFFIX="${VERSION#*-}"
+  BASE="${VERSION%-*}"
+  case "${SUFFIX,,}" in
+    snapshot*)  PATCH=1 ;;
+    alpha*)     PATCH=2 ;;
+    beta*)      PATCH=3 ;;
+    rc*)        PATCH=4 ;;
+    *)          PATCH=9 ;;
+  esac
+  VERSION="${BASE}.${PATCH}"
+  echo "Version sanitisée pour macOS : $VERSION"
+fi
+
 JAVAFX_JARS=$(find ~/.gradle/caches -name "javafx*.jar" | grep -v sources | tr '\n' ':' | sed 's/:$//')
 MAIN_JAR=$(ls build/jpackage-input/*.jar | grep -Ev "javafx|controlsfx|plantuml|junit" | head -1 | xargs basename)
 echo "Main JAR : $MAIN_JAR"
