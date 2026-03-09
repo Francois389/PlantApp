@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PlantApp
+Comment=Application d'édition de diagram PlantUML
+Exec=plantapp
+Icon=plantapp
+Terminal=false
+Categories=Development;
