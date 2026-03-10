@@ -5,15 +5,6 @@ import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import net.sourceforge.plantuml.SourceStringReader
-import org.w3c.dom.Element
-import java.io.ByteArrayOutputStream
-import java.io.File
-import javax.imageio.IIOImage
-import javax.imageio.ImageIO
-import javax.imageio.ImageTypeSpecifier
-import javax.imageio.metadata.IIOMetadataNode
-import javax.xml.parsers.DocumentBuilderFactory
 
 class EditorViewModel(
     private val diagramService: DiagramService
