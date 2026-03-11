@@ -1,6 +1,6 @@
 package com.fsp.plantapp
 
-interface Observer {
+interface Observable {
     fun update()
     fun addListener(listener: () -> Unit)
 }

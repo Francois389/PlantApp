@@ -1,13 +1,13 @@
 package com.fsp.plantapp.diagram
 
-import com.fsp.plantapp.Observer
+import com.fsp.plantapp.Observable
 import net.sourceforge.plantuml.SourceStringReader
 import java.io.ByteArrayOutputStream
 
 class DiagramService(
     private val diagramRepository: InMemoryDiagramRepository,
     private val listeners: MutableList<(() -> Unit)> = mutableListOf(),
-): Observer {
+): Observable {
     init {
         regenerateDiagramImage()
     }
