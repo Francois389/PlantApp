@@ -32,15 +32,6 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                         textProperty().bindBidirectional(viewModel.diagramTitle)
                     },
                     textArea,
-                    Button("Générer le diagramme") {
-                        viewModel.regenerateDiagram()
-                    }.apply {
-                        // C'est un problème que je ne comprends pas.
-                        // Quand `viewModel.regenerateDiagram()` est défini dans l'onAction, tous va bien.
-                        // Mais dès que je le retire, l'event listener ne se déclenche plus.
-                        isManaged = false
-                        isVisible = false
-                    }
                 )
             },
             Pane(
