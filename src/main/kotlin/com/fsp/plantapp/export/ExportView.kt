@@ -1,6 +1,7 @@
 package com.fsp.plantapp.export
 
 import com.fsp.plantapp.Button
+import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
@@ -15,7 +16,7 @@ class ExportView(viewModel: ExportViewModel) : VBox() {
     init {
         spacing = 10.0
         val horizontalPadding = 100.0
-        padding = javafx.geometry.Insets(0.0, horizontalPadding, 0.0, horizontalPadding)
+        padding = Insets(0.0, horizontalPadding, 0.0, horizontalPadding)
         val fileNameField = HBox().apply {
             spacing = 5.0
             alignment = Pos.CENTER_LEFT

@@ -23,13 +23,17 @@ class ExportViewModel(
 
     init {
         fileName.value = exportService.getDiagram().diagrammTitle
-        fileName.addListener { _, _, newValue ->
+        fileName.addListener { _, _, _ ->
             updateFeedbackText()
         }
-        directoryDestination.addListener { _, _, newValue ->
+        directoryDestination.addListener { _, _, _ ->
             updateFeedbackText()
         }
         updateFeedbackText()
+
+        exportService.addListener {
+            fileName.value = exportService.getDiagram().diagrammTitle
+        }
     }
 
     private fun updateFeedbackText() {

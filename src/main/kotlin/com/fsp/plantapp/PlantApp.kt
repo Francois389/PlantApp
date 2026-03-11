@@ -1,13 +1,13 @@
 package com.fsp.plantapp
 
-import com.fsp.plantapp.Screen.EditorScreen
-import com.fsp.plantapp.Screen.ExportScreen
+import com.fsp.plantapp.Screen.*
 import com.fsp.plantapp.diagram.DiagramService
 import com.fsp.plantapp.diagram.InMemoryDiagramRepository
 import com.fsp.plantapp.editor.EditorView
 import com.fsp.plantapp.editor.EditorViewModel
 import com.fsp.plantapp.export.ExportView
 import com.fsp.plantapp.export.ExportViewModel
+import com.fsp.plantapp.main.MainView
 import javafx.application.Application
 import javafx.scene.Scene
 import javafx.scene.layout.Pane
@@ -23,6 +23,7 @@ class PlantApp : Application() {
             when (screen) {
                 is EditorScreen -> EditorView(EditorViewModel(diagramService))
                 is ExportScreen -> ExportView(ExportViewModel(diagramService))
+                is MainScreen -> MainView()
             }
         }
 
@@ -32,7 +33,7 @@ class PlantApp : Application() {
             show()
         }
 
-        navigator.navigateTo(EditorScreen)
+        navigator.navigateTo(MainScreen)
     }
 }
 

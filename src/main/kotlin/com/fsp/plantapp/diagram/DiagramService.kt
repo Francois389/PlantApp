@@ -1,11 +1,13 @@
 package com.fsp.plantapp.diagram
 
+import com.fsp.plantapp.Observable
 import net.sourceforge.plantuml.SourceStringReader
 import java.io.ByteArrayOutputStream
 
 class DiagramService(
-    private val diagramRepository: InMemoryDiagramRepository
-) {
+    private val diagramRepository: InMemoryDiagramRepository,
+    private val listeners: MutableList<(() -> Unit)> = mutableListOf(),
+): Observable {
     init {
         regenerateDiagramImage()
     }
@@ -39,6 +41,7 @@ class DiagramService(
         )
 
         diagramRepository.save(diagram)
+        update()
     }
 
     private fun updateTitle(textSource: String): String {
@@ -51,5 +54,11 @@ class DiagramService(
 
     fun getDiagram(): PlantUMLDiagram {
         return diagramRepository.get().copy()
+    }
+
+    override fun update() = listeners.forEach { it() }
+
+    override fun addListener(listener: () -> Unit) {
+        listeners.add(listener)
     }
 }

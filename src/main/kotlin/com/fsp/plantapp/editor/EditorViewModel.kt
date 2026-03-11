@@ -9,26 +9,24 @@ import javafx.beans.property.SimpleStringProperty
 class EditorViewModel(
     private val diagramService: DiagramService
 ) {
-    val exportPaneVisible: Property<Boolean> = SimpleBooleanProperty(true)
-    val errorText = SimpleStringProperty()
-
     val diagramSourceText = SimpleStringProperty()
     val imageOutput: Property<ByteArray> = SimpleObjectProperty()
     val diagramTitle = SimpleStringProperty()
 
     init {
+        diagramService.getDiagram().let {
+            imageOutput.value = it.diagrammImage
+            diagramTitle.value = it.diagrammTitle
+            diagramSourceText.value = it.diagrammSource
+        }
+
+
         diagramSourceText.addListener { _, _, _ ->
             diagramService.setDiagramSource(diagramSourceText.value)
             diagramService.getDiagram().let {
                 imageOutput.value = it.diagrammImage
                 diagramTitle.value = it.diagrammTitle
-                diagramSourceText.value = it.diagrammSource
             }
-        }
-        diagramService.getDiagram().let {
-            imageOutput.value = it.diagrammImage
-            diagramTitle.value = it.diagrammTitle
-            diagramSourceText.value = it.diagrammSource
         }
     }
 
