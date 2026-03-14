@@ -19,12 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.dp
-import net.sourceforge.plantuml.SourceStringReader
 import org.jetbrains.compose.resources.decodeToImageBitmap
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 
 @Composable
 fun PlantUmlEditor(source: String, onSourceChange: (String) -> Unit = {}) {
@@ -93,8 +89,3 @@ fun EditorPanel(source: String, onValueChange: (String) -> Unit) {
     )
 }
 
-fun renderPlantUml(source: String): ByteArray {
-    val out = ByteArrayOutputStream()
-    SourceStringReader(source).outputImage(out)
-    return out.toByteArray()
-}
