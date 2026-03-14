@@ -43,7 +43,10 @@ fun VerticalSplitPanel(
 ) {
     var leftPaneWidth by remember { mutableStateOf(150.dp) }
     Row {
-        Column(modifier = Modifier.width(leftPaneWidth).fillMaxHeight()) {
+        Column(modifier = Modifier
+            .width(leftPaneWidth)
+            .fillMaxHeight()
+        ) {
             leftPanel()
         }
         Column(
