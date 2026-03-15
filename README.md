@@ -15,6 +15,18 @@ L'application propose deux onglets principaux :
 - détection du titre PlantUML pour nommer le fichier d'export
 - export PNG avec intégration de la source PlantUML dans un chunk `tEXt`
 
+<details>
+<summary>Screenshots</summary>
+
+![Main](./screenshot/Main.png "Main")
+![Main avec un titre](./screenshot/Main-Title.png "Main avec un titre")
+![Main avec un plus grand diagramme](./screenshot/Main-BiggerDiagram.png "Main avec un plus grand diagramme")
+![Export](./screenshot/Export.png "Export")
+![Export reussie](./screenshot/Export-Reussi.png "Export réussi")
+![Export echec](./screenshot/Export-Echec.png "Export échec")
+
+</details>
+
 ## Stack technique
 
 - Kotlin 2.1.20
