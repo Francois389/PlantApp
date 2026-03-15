@@ -40,6 +40,15 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                     isPreserveRatio = true
                     viewModel.image.subscribe { newImage -> newImage?.let { updateImage(newImage) } }
                     updateImage(viewModel.image.value)
+
+                    setOnScroll { event ->
+                        if (event.isControlDown && event.deltaY != 0.0) {
+                            val zoomFactor = if (event.deltaY > 0) 1.1 else 1.0 / 1.1
+                            fitWidth = (fitWidth * zoomFactor).coerceIn(50.0, 5000.0)
+                            fitHeight = (fitHeight * zoomFactor).coerceIn(50.0, 5000.0)
+                            event.consume()
+                        }
+                    }
                 }
             ).apply {
                 isPannable = true
