@@ -2,11 +2,11 @@ package com.fsp.plantapp.editor
 
 import javafx.geometry.Pos
 import javafx.scene.control.Label
+import javafx.scene.control.ScrollPane
 import javafx.scene.control.SplitPane
 import javafx.scene.control.TextArea
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
-import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.layout.VBox.setVgrow
@@ -35,13 +35,15 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                     textArea,
                 )
             },
-            Pane(
+            ScrollPane(
                 ImageView().apply {
                     isPreserveRatio = true
                     viewModel.image.subscribe { newImage -> newImage?.let { updateImage(newImage) } }
                     updateImage(viewModel.image.value)
                 }
-            ),
+            ).apply {
+                isPannable = true
+            },
         )
     }
 }
