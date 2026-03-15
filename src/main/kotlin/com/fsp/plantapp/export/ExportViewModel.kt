@@ -22,7 +22,7 @@ class ExportViewModel(
 
 
     init {
-        fileName.value = exportService.getDiagram().diagrammTitle
+        fileName.value = exportService.getDiagram().title
         fileName.addListener { _, _, _ ->
             updateFeedbackText()
         }
@@ -32,7 +32,7 @@ class ExportViewModel(
         updateFeedbackText()
 
         exportService.addListener {
-            fileName.value = exportService.getDiagram().diagrammTitle
+            fileName.value = exportService.getDiagram().title
         }
     }
 
@@ -54,14 +54,14 @@ class ExportViewModel(
     }
 
     fun detectTitleFromSource() {
-        fileName.value = exportService.getDiagram().diagrammTitle
+        fileName.value = exportService.getDiagram().title
     }
 
     fun saveDiagramToFile(path: String) {
         val diagramm = exportService.getDiagram()
         try {
             // Lire le PNG depuis les bytes
-            val bufferedImage = ImageIO.read(diagramm.diagrammImage.inputStream())
+            val bufferedImage = ImageIO.read(diagramm.image.inputStream())
 
             // Préparer le writer PNG
             val writer = ImageIO.getImageWritersByFormatName("png").next()
@@ -76,7 +76,7 @@ class ExportViewModel(
             val textNode = IIOMetadataNode("tEXt")
             val textEntry = IIOMetadataNode("tEXtEntry")
             textEntry.setAttribute("keyword", "plantuml_source")
-            textEntry.setAttribute("value", diagramm.diagrammSource)
+            textEntry.setAttribute("value", diagramm.source)
             textNode.appendChild(textEntry)
             root.appendChild(textNode)
             metadata.setFromTree(metaFormat, root)

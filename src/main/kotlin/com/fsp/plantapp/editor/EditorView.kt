@@ -1,10 +1,10 @@
 package com.fsp.plantapp.editor
 
-import com.fsp.plantapp.Button
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.SplitPane
 import javafx.scene.control.TextArea
+import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
@@ -13,7 +13,7 @@ import javafx.scene.layout.VBox.setVgrow
 
 fun ImageView.updateImage(newImage: ByteArray) {
     newImage.inputStream().use { stream ->
-        this.image = javafx.scene.image.Image(stream)
+        this.image = Image(stream)
     }
 }
 
@@ -22,14 +22,15 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
         items.addAll(
             VBox().apply {
                 val textArea = TextArea().apply {
-                    textProperty().bindBidirectional(viewModel.diagramSourceText)
                     prefRowCount = 10
+                    text = viewModel.source
+                    textProperty().subscribe(viewModel::handleSourceUpdate)
                 }
                 setVgrow(textArea, Priority.ALWAYS)
                 alignment = Pos.TOP_CENTER
                 children.addAll(
                     Label().apply {
-                        textProperty().bindBidirectional(viewModel.diagramTitle)
+                        textProperty().bind(viewModel.title)
                     },
                     textArea,
                 )
@@ -37,13 +38,10 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
             Pane(
                 ImageView().apply {
                     isPreserveRatio = true
-                    viewModel.imageOutput.addListener { _, _, newValue ->
-                        newValue?.let { updateImage(newValue) }
-                    }
-                    updateImage(viewModel.imageOutput.value)
+                    viewModel.image.subscribe { newImage -> newImage?.let { updateImage(newImage) } }
+                    updateImage(viewModel.image.value)
                 }
             ),
         )
-        setDividerPositions(0.3)
     }
 }
