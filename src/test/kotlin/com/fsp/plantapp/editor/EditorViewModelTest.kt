@@ -19,7 +19,7 @@ class EditorViewModelTest {
         """.trimIndent()
 
         //When we update the diagram
-        viewModel.source.value = simpleDiagram
+        viewModel.handleSourceUpdate(simpleDiagram)
 
         // Then the title should be updated
         assertEquals(title, viewModel.title.value)
