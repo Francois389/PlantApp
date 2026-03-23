@@ -32,12 +32,16 @@ javafx {
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
+val controlsFXVersion = "11.2.3"
+val junitLauncherVersion = "6.0.3"
+val plantumlVersion = "1.2026.0"
 dependencies {
-    implementation("org.controlsfx:controlsfx:11.2.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    implementation("org.controlsfx:controlsfx:$controlsFXVersion")
+    implementation("net.sourceforge.plantuml:plantuml:$plantumlVersion")
+
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-    testImplementation("org.junit.platform:junit-platform-launcher:6.0.3")
-    implementation("net.sourceforge.plantuml:plantuml:1.2026.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.junit.platform:junit-platform-launcher:$junitLauncherVersion")
 }
 
 tasks.withType<Test> {
@@ -45,6 +49,8 @@ tasks.withType<Test> {
 }
 
 tasks.register<Copy>("copyDependencies") {
+    group = "CD"
+    description = "Copies dependencies to build files"
     dependsOn("jar")
     from(configurations.runtimeClasspath)
     from(tasks.named("jar"))
@@ -52,6 +58,13 @@ tasks.register<Copy>("copyDependencies") {
 }
 
 tasks.register<Exec>("jpackage") {
+    group = "CD"
+    description = """
+        Créer un installeur pour l'application en utilisant jpackage.
+         - Assure que les dépendances sont copiées dans le répertoire d'entrée.
+         - Récupère les JARs JavaFX depuis les dépendances résolues pour les inclure dans le module-path.
+         - Nettoie le répertoire de sortie avant de générer l'installeur.
+    """.trimIndent()
     dependsOn("copyDependencies")
 
     val buildDir = layout.buildDirectory.get().asFile
