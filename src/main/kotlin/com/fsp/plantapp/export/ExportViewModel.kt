@@ -38,18 +38,23 @@ class ExportViewModel(
 
     private fun updateFeedbackText() {
         successText.value = ""
-        if (fileName.value.isEmpty()) {
-            exportValid.value = false
-            errorText.value = "Erreur : Le nom du fichier ne peut pas être vide."
-        } else if (directoryDestination.value.isEmpty()) {
-            exportValid.value = false
-            errorText.value = "Erreur : Le répertoire de destination ne peut pas être vide."
-        } else if (checkIfFileExists()) {
-            exportValid.value = false
-            errorText.value = "Erreur : Un fichier avec le même nom existe déjà à cet emplacement."
-        } else {
-            exportValid.value = true
-            errorText.value = ""
+        when {
+            fileName.value.isEmpty() -> {
+                exportValid.value = false
+                errorText.value = "Erreur : Le nom du fichier ne peut pas être vide."
+            }
+            directoryDestination.value.isEmpty() -> {
+                exportValid.value = false
+                errorText.value = "Erreur : Le répertoire de destination ne peut pas être vide."
+            }
+            checkIfFileExists() -> {
+                exportValid.value = false
+                errorText.value = "Erreur : Un fichier avec le même nom existe déjà à cet emplacement."
+            }
+            else -> {
+                exportValid.value = true
+                errorText.value = ""
+            }
         }
     }
 
