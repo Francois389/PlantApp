@@ -10,6 +10,7 @@ import com.fsp.plantapp.export.ExportViewModel
 import com.fsp.plantapp.main.MainView
 import javafx.application.Application
 import javafx.scene.Scene
+import javafx.scene.image.Image
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
 
@@ -31,6 +32,7 @@ class PlantApp : Application() {
             title = "Plant App"
             scene = Scene(Pane(), 10.0, 10.0)
             show()
+            icons.add(Image(this.javaClass.getResourceAsStream("/PlantApp.png")))
         }
 
         navigator.navigateTo(MainScreen)
