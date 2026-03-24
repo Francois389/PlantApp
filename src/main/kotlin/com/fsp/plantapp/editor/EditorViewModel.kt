@@ -13,15 +13,9 @@ class EditorViewModel(
     val image: Property<ByteArray> = SimpleObjectProperty()
     val title = SimpleStringProperty()
 
-    val diagram: PlantUMLDiagram = PlantUMLDiagram(
-        source = """
-        @startuml;
-        title Titre
-        Alice -> Bob: Hello
-        Bob -> Alice: Hi!
-        @enduml
-    """.trimIndent()
-    )
+    val svgContent = SimpleStringProperty()
+
+    val diagram: PlantUMLDiagram = PlantUMLDiagram(source)
 
     init {
         handleSourceUpdate(source)
@@ -32,6 +26,7 @@ class EditorViewModel(
         image.value = diagram.image
         title.value = diagram.title
 
+        svgContent.value = diagram.renderSVG()
         diagramService.updateDiagram(diagram)
     }
 }

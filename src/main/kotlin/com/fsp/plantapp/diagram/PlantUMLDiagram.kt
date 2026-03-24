@@ -1,23 +1,28 @@
 package com.fsp.plantapp.diagram
 
+import net.sourceforge.plantuml.FileFormat
+import net.sourceforge.plantuml.FileFormatOption
 import net.sourceforge.plantuml.SourceStringReader
 import java.io.ByteArrayOutputStream
+import java.nio.charset.Charset
+
+
 
 class PlantUMLDiagram(
     source: String,
-): Cloneable {
+) : Cloneable {
     var title: String
     var image: ByteArray
     var source: String = source
         set(value) {
             field = value
             title = updateTitle(value)
-            image = renderDiagram(value)
+            image = renderPNG(value)
         }
 
     init {
         this.title = updateTitle(source)
-        this.image = renderDiagram(source)
+        this.image = renderPNG(source)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -26,7 +31,7 @@ class PlantUMLDiagram(
 
         other as PlantUMLDiagram
 
-        if (this@PlantUMLDiagram.source != other.source) return false
+        if (this.source != other.source) return false
         if (title != other.title) return false
         if (!image.contentEquals(other.image)) return false
 
@@ -34,21 +39,32 @@ class PlantUMLDiagram(
     }
 
     override fun hashCode(): Int {
-        var result = this@PlantUMLDiagram.source.hashCode()
+        var result = this.source.hashCode()
         result = 31 * result + title.hashCode()
         result = 31 * result + image.contentHashCode()
         return result
     }
 
-    private fun renderDiagram(textSource: String): ByteArray {
+    private fun renderPNG(textSource: String): ByteArray {
         val reader = SourceStringReader(textSource)
 
-        val outputStream = ByteArrayOutputStream()
-        reader.outputImage(outputStream)
+        val pngOS = ByteArrayOutputStream()
+        reader.outputImage(pngOS, FileFormatOption(FileFormat.PNG))
 
-        val inputStream = outputStream.toByteArray().inputStream()
+        val inputStream = pngOS.toByteArray().inputStream()
 
         return inputStream.readAllBytes()
+    }
+
+    fun renderSVG(): String {
+        val reader = SourceStringReader(source)
+        val os = ByteArrayOutputStream()
+
+        reader.outputImage(os, FileFormatOption(FileFormat.SVG))
+        os.close()
+
+
+        return String(os.toByteArray(), Charset.forName("UTF-8"))
     }
 
     private fun updateTitle(textSource: String): String {
