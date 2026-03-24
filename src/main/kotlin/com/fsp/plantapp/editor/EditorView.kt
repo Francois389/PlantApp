@@ -57,7 +57,7 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                 Button("+").apply {
                     setOnAction { applyZoom(scrollPane, webView, zoomFactor * zoomStep, zoomLabel) }
                 },
-                Button("100%").apply {
+                Button("Réinitialiser").apply {
                     setOnAction { applyZoom(scrollPane, webView, 1.0, zoomLabel) }
                 },
                 zoomLabel,
@@ -75,6 +75,17 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
         viewModel.svgContent.subscribe { newSvg ->
             if (newSvg != null) {
                 renderSvgInWebView(scrollPane, webView, newSvg, zoomLabel)
+            }
+        }
+        // Ajustement dynamique de la taille de la WebView selon le contenu du SVG
+        webView.engine.documentProperty().addListener { _, _, doc ->
+            if (doc != null) {
+                val width = readScriptDouble(webView.engine, "window.__svgBaseWidth || 800", 800.0)
+                val height = readScriptDouble(webView.engine, "window.__svgBaseHeight || 600", 600.0)
+
+                svgBaseWidth = width
+                svgBaseHeight = height
+                applyZoom(scrollPane, webView, zoomFactor, zoomLabel)
             }
         }
 
@@ -124,8 +135,6 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                 val factor = if (event.deltaY > 0) zoomStep else 1 / zoomStep
                 applyZoom(scrollPane, webView, zoomFactor * factor, zoomLabel)
                 event.consume()
-            } else {
-                return@addEventFilter
             }
         }
     }
@@ -135,11 +144,10 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
         webView: WebView,
         requestedZoom: Double,
         zoomLabel: Label,
-        forceApply: Boolean = false,
     ) {
         val clamped = requestedZoom.coerceIn(minZoom, maxZoom)
 
-        if (!forceApply && abs(clamped - zoomFactor) < 0.0001) {
+        if (abs(clamped - zoomFactor) < 0.0001) {
             zoomLabel.text = formatZoomLabel()
             return
         }
@@ -156,18 +164,8 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
 
         zoomFactor = clamped
         applyZoomToSvg(webView.engine)
-        val zoomedWidth = svgBaseWidth * zoomFactor;
-            readScriptDouble(
-            webView.engine,
-            "window.__getSvgZoomedWidth ? window.__getSvgZoomedWidth() : 800",
-            svgBaseWidth * zoomFactor
-        )
-        val zoomedHeight = svgBaseHeight * zoomFactor;
-            readScriptDouble(
-            webView.engine,
-            "window.__getSvgZoomedHeight ? window.__getSvgZoomedHeight() : 600",
-            svgBaseHeight * zoomFactor
-        )
+        val zoomedWidth = svgBaseWidth * zoomFactor
+        val zoomedHeight = svgBaseHeight * zoomFactor
         webView.prefWidth = zoomedWidth + 20
         webView.prefHeight = zoomedHeight + 20
         zoomLabel.text = formatZoomLabel()
@@ -176,17 +174,21 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
             val newMaxX = max(webView.boundsInParent.width - scrollPane.viewportBounds.width, 0.0)
             val newMaxY = max(webView.boundsInParent.height - scrollPane.viewportBounds.height, 0.0)
 
-            if (newMaxX > 0.0 && hRange > 0.0) {
-                val xRatio = if (oldMaxX > 0.0) (oldX / oldMaxX).coerceIn(0.0, 1.0) else 0.0
-                scrollPane.hvalue = scrollPane.hmin + xRatio * hRange
-            } else {
-                scrollPane.hvalue = scrollPane.hmin
+            when {
+                newMaxX > 0.0 && hRange > 0.0 -> {
+                    val xRatio = if (oldMaxX > 0.0) (oldX / oldMaxX).coerceIn(0.0, 1.0) else 0.0
+                    scrollPane.hvalue = scrollPane.hmin + xRatio * hRange
+                }
+
+                else -> scrollPane.hvalue = scrollPane.hmin
             }
-            if (newMaxY > 0.0 && vRange > 0.0) {
-                val yRatio = if (oldMaxY > 0.0) (oldY / oldMaxY).coerceIn(0.0, 1.0) else 0.0
-                scrollPane.vvalue = scrollPane.vmin + yRatio * vRange
-            } else {
-                scrollPane.vvalue = scrollPane.vmin
+            when {
+                newMaxY > 0.0 && vRange > 0.0 -> {
+                    val yRatio = if (oldMaxY > 0.0) (oldY / oldMaxY).coerceIn(0.0, 1.0) else 0.0
+                    scrollPane.vvalue = scrollPane.vmin + yRatio * vRange
+                }
+
+                else -> scrollPane.vvalue = scrollPane.vmin
             }
         }
     }
@@ -263,13 +265,6 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                             container.style.height = (window.__svgBaseHeight * zoom) + 'px';
                             return true;
                         };
-
-                        window.__getSvgZoomedWidth = function () {
-                            return container ? Math.max(container.scrollWidth, container.clientWidth) : window.__svgBaseWidth;
-                        };
-                        window.__getSvgZoomedHeight = function () {
-                            return container ? Math.max(container.scrollHeight, container.clientHeight) : window.__svgBaseHeight;
-                        };
                     })();
                 </script>
             </body>
@@ -277,17 +272,5 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
         """.trimIndent()
 
         engine.loadContent(html)
-
-        // Ajustement dynamique de la taille de la WebView selon le contenu du SVG
-        engine.documentProperty().addListener { _, _, doc ->
-            if (doc != null) {
-                val width = readScriptDouble(engine, "window.__svgBaseWidth || 800", 800.0)
-                val height = readScriptDouble(engine, "window.__svgBaseHeight || 600", 600.0)
-
-                svgBaseWidth = width
-                svgBaseHeight = height
-                applyZoom(scrollPane, webView, zoomFactor, zoomLabel, forceApply = true)
-            }
-        }
     }
 }
