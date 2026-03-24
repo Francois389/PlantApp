@@ -124,8 +124,6 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                 val factor = if (event.deltaY > 0) zoomStep else 1 / zoomStep
                 applyZoom(scrollPane, webView, zoomFactor * factor, zoomLabel)
                 event.consume()
-            } else {
-                return@addEventFilter
             }
         }
     }
@@ -156,18 +154,8 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
 
         zoomFactor = clamped
         applyZoomToSvg(webView.engine)
-        val zoomedWidth = svgBaseWidth * zoomFactor;
-            readScriptDouble(
-            webView.engine,
-            "window.__getSvgZoomedWidth ? window.__getSvgZoomedWidth() : 800",
-            svgBaseWidth * zoomFactor
-        )
-        val zoomedHeight = svgBaseHeight * zoomFactor;
-            readScriptDouble(
-            webView.engine,
-            "window.__getSvgZoomedHeight ? window.__getSvgZoomedHeight() : 600",
-            svgBaseHeight * zoomFactor
-        )
+        val zoomedWidth = svgBaseWidth * zoomFactor
+        val zoomedHeight = svgBaseHeight * zoomFactor
         webView.prefWidth = zoomedWidth + 20
         webView.prefHeight = zoomedHeight + 20
         zoomLabel.text = formatZoomLabel()
@@ -176,17 +164,21 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
             val newMaxX = max(webView.boundsInParent.width - scrollPane.viewportBounds.width, 0.0)
             val newMaxY = max(webView.boundsInParent.height - scrollPane.viewportBounds.height, 0.0)
 
-            if (newMaxX > 0.0 && hRange > 0.0) {
-                val xRatio = if (oldMaxX > 0.0) (oldX / oldMaxX).coerceIn(0.0, 1.0) else 0.0
-                scrollPane.hvalue = scrollPane.hmin + xRatio * hRange
-            } else {
-                scrollPane.hvalue = scrollPane.hmin
+            when {
+                newMaxX > 0.0 && hRange > 0.0 -> {
+                    val xRatio = if (oldMaxX > 0.0) (oldX / oldMaxX).coerceIn(0.0, 1.0) else 0.0
+                    scrollPane.hvalue = scrollPane.hmin + xRatio * hRange
+                }
+
+                else -> scrollPane.hvalue = scrollPane.hmin
             }
-            if (newMaxY > 0.0 && vRange > 0.0) {
-                val yRatio = if (oldMaxY > 0.0) (oldY / oldMaxY).coerceIn(0.0, 1.0) else 0.0
-                scrollPane.vvalue = scrollPane.vmin + yRatio * vRange
-            } else {
-                scrollPane.vvalue = scrollPane.vmin
+            when {
+                newMaxY > 0.0 && vRange > 0.0 -> {
+                    val yRatio = if (oldMaxY > 0.0) (oldY / oldMaxY).coerceIn(0.0, 1.0) else 0.0
+                    scrollPane.vvalue = scrollPane.vmin + yRatio * vRange
+                }
+
+                else -> scrollPane.vvalue = scrollPane.vmin
             }
         }
     }
