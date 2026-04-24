@@ -8,6 +8,7 @@ import com.fsp.plantapp.editor.EditorViewModel
 import com.fsp.plantapp.export.ExportView
 import com.fsp.plantapp.export.ExportViewModel
 import com.fsp.plantapp.main.MainView
+import com.tangorabox.componentinspector.fx.FXComponentInspectorHandler
 import javafx.application.Application
 import javafx.scene.Scene
 import javafx.scene.image.Image
@@ -36,6 +37,7 @@ class PlantApp : Application() {
         }
 
         navigator.navigateTo(MainScreen)
+        FXComponentInspectorHandler.handleAll()
     }
 }
 

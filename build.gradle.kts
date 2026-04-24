@@ -35,13 +35,16 @@ javafx {
 val controlsFXVersion = "11.2.3"
 val junitLauncherVersion = "6.0.3"
 val plantumlVersion = "1.2026.0"
+val componentInscpectorVersion = "1.1.0"
 dependencies {
     implementation("org.controlsfx:controlsfx:$controlsFXVersion")
     implementation("net.sourceforge.plantuml:plantuml:$plantumlVersion")
+    implementation("com.tangorabox:component-inspector-fx:$componentInscpectorVersion")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testImplementation("org.junit.platform:junit-platform-launcher:$junitLauncherVersion")
+
 }
 
 tasks.withType<Test> {

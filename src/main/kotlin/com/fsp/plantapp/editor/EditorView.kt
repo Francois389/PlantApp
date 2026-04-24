@@ -107,11 +107,7 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                 lastDragX = event.sceneX
                 lastDragY = event.sceneY
 
-                val viewport = scrollPane.viewportBounds
-                val contentWidth = webView.boundsInParent.width
-                val contentHeight = webView.boundsInParent.height
-                val maxX = max(contentWidth - viewport.width, 0.0)
-                val maxY = max(contentHeight - viewport.height, 0.0)
+                val (maxX, maxY) = computeMaxXYOfWebView(scrollPane, webView)
 
                 if (maxX > 0.0) {
                     val range = scrollPane.hmax - scrollPane.hmin
@@ -152,11 +148,7 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
             return
         }
 
-        val viewport = scrollPane.viewportBounds
-        val oldContentWidth = webView.boundsInParent.width
-        val oldContentHeight = webView.boundsInParent.height
-        val oldMaxX = max(oldContentWidth - viewport.width, 0.0)
-        val oldMaxY = max(oldContentHeight - viewport.height, 0.0)
+        val (oldMaxX, oldMaxY) = computeMaxXYOfWebView(scrollPane, webView)
         val hRange = scrollPane.hmax - scrollPane.hmin
         val vRange = scrollPane.vmax - scrollPane.vmin
         val oldX = if (hRange > 0.0) (scrollPane.hvalue - scrollPane.hmin) / hRange * oldMaxX else 0.0
@@ -191,6 +183,18 @@ class EditorView(viewModel: EditorViewModel) : SplitPane() {
                 else -> scrollPane.vvalue = scrollPane.vmin
             }
         }
+    }
+
+    private fun computeMaxXYOfWebView(
+        scrollPane: ScrollPane,
+        webView: WebView
+    ): Pair<Double, Double> {
+        val viewport = scrollPane.viewportBounds
+        val oldContentWidth = webView.boundsInParent.width
+        val oldContentHeight = webView.boundsInParent.height
+        val oldMaxX = max(oldContentWidth - viewport.width, 0.0)
+        val oldMaxY = max(oldContentHeight - viewport.height, 0.0)
+        return Pair(oldMaxX, oldMaxY)
     }
 
     private fun applyZoomToSvg(engine: WebEngine) {
