@@ -45,3 +45,11 @@ bin/
 
 /.idea/gradle.xml
 /.idea/discord.xml
+/.idea/.gitignore
+/.idea/inspectionProfiles
+/.idea/copilot.data.migration.ask2agent.xml
+/.idea/material_theme_project_new.xml
+/.idea/misc.xml
+/.idea/vcs.xml
+.idea/copilot.data.migration.agent.xml
+.idea/workspace.xml

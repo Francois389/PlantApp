@@ -1,8 +1,10 @@
 plugins {
     java
     application
-    id("org.jetbrains.kotlin.jvm") version "2.1.20"
+    kotlin("jvm") version "2.1.20"
+    kotlin("plugin.spring") version "2.1.20"
     id("org.openjfx.javafxplugin") version "0.1.0"
+    id("org.springframework.boot") version "3.4.4"
 }
 
 group = "com.fsp"
@@ -10,7 +12,6 @@ version = "1.1.1"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 val junitVersion = "5.12.1"
@@ -33,7 +34,7 @@ javafx {
 }
 
 dependencies {
-    implementation("org.controlsfx:controlsfx:11.2.3")
+    implementation("io.github.francois389:javaspringfx:0.1.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
     testImplementation("org.junit.platform:junit-platform-launcher:6.0.3")
