@@ -1,10 +1,10 @@
 plugins {
     java
     application
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.4.0"
     kotlin("plugin.spring") version "2.1.20"
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("org.springframework.boot") version "3.4.4"
+    id("org.springframework.boot") version "4.0.6"
 }
 
 group = "com.fsp"
@@ -15,7 +15,7 @@ repositories {
     mavenLocal()
 }
 
-val junitVersion = "5.12.1"
+val junitVersion = "6.0.3"
 
 
 tasks.withType<JavaCompile> {
@@ -26,20 +26,21 @@ application {
     mainClass.set("com.fsp.plantapp.PlantApp")
 }
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 javafx {
-    version = "21.0.6"
+    version = "26"
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
 dependencies {
-    implementation("io.github.francois389:javaspringfx:0.1.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-    testImplementation("org.junit.platform:junit-platform-launcher:6.0.3")
+    implementation("io.github.francois389:javaspringfx:0.2.1")
     implementation("net.sourceforge.plantuml:plantuml:1.2026.0")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.junit.platform:junit-platform-launcher:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 tasks.withType<Test> {
