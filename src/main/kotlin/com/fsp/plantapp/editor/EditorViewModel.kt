@@ -13,13 +13,8 @@ class EditorViewModel(
     private val diagramService: DiagramService
 ) {
 
-    val initialSource = """
-        @startuml;
-        title Titre
-        Alice -> Bob: Hello
-        Bob -> Alice: Hi!
-        @enduml
-    """.trimIndent()
+    val initialSource = diagramService.diagramSource
+
     val diagramTitle = SimpleStringProperty()
     val diagramSource = SimpleStringProperty(initialSource)
     val image = SimpleObjectProperty<Image>()
@@ -29,6 +24,7 @@ class EditorViewModel(
         updateImage(initialSource)
         diagramSource.addListener { _, _, newValue ->
             newValue?.let {
+                diagramService.diagramSource = newValue
                 updateTitle(newValue)
                 updateImage(newValue)
             }
@@ -37,7 +33,7 @@ class EditorViewModel(
 
     private fun updateImage(source: String) {
         val tempOut = ByteArrayOutputStream()
-        val isSuccess = diagramService.renderDiagram(source, tempOut)
+        val isSuccess = diagramService.renderDiagram(tempOut)
         if (isSuccess) {
             image.set(Image(ByteArrayInputStream(tempOut.toByteArray())))
         }

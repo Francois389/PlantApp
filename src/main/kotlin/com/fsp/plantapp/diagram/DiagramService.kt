@@ -6,9 +6,18 @@ import java.io.OutputStream
 
 @Service
 class DiagramService {
-        fun renderDiagram(source: String, output: OutputStream): Boolean {
-            val reader = SourceStringReader(source)
-            val isSuccess = reader.outputImage(output).description != null
-            return isSuccess
-        }
+
+    var diagramSource: String = """
+        @startuml;
+        title Titre
+        Alice -> Bob: Hello
+        Bob -> Alice: Hi!
+        @enduml
+    """.trimIndent()
+
+    fun renderDiagram(output: OutputStream): Boolean {
+        val reader = SourceStringReader(diagramSource)
+        val isSuccess = reader.outputImage(output).description != null
+        return isSuccess
+    }
 }
