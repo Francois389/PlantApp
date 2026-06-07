@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service
 import java.io.OutputStream
 
 @Service
-class DiagramService() {
+class DiagramService {
         fun renderDiagram(source: String, output: OutputStream): Boolean {
             val reader = SourceStringReader(source)
             val isSuccess = reader.outputImage(output).description != null

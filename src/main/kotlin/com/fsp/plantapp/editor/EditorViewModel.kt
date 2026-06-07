@@ -14,7 +14,7 @@ class EditorViewModel(
 ) {
 
     val initialSource = """
-         @startuml;
+        @startuml;
         title Titre
         Alice -> Bob: Hello
         Bob -> Alice: Hi!
@@ -27,7 +27,7 @@ class EditorViewModel(
     init {
         updateTitle(initialSource)
         updateImage(initialSource)
-        diagramSource.addListener { observable, oldValue, newValue ->
+        diagramSource.addListener { _, _, newValue ->
             newValue?.let {
                 updateTitle(newValue)
                 updateImage(newValue)
@@ -41,6 +41,7 @@ class EditorViewModel(
         if (isSuccess) {
             image.set(Image(ByteArrayInputStream(tempOut.toByteArray())))
         }
+        tempOut.close()
     }
 
     private fun updateTitle(souce: String) {

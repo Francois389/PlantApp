@@ -5,12 +5,10 @@ import io.github.francois389.javaspringfx.navigation.IView
 import javafx.scene.control.Label
 import javafx.scene.control.SplitPane
 import javafx.scene.control.TextArea
-import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
-import javafx.scene.text.Text
-import java.io.InputStream
 
 @View
 class EditorView(
@@ -28,15 +26,23 @@ class EditorView(
         TextArea().apply {
             font = Font.font("Monospace")
             textProperty().bindBidirectional(editorViewModel.diagramSource)
+            VBox.setVgrow(this, Priority.ALWAYS)
         }.let(children::add)
     }
 
     val imageView: ImageView = ImageView()
 
-    val diagramImage = VBox().apply {
-        Text("Visualisation").let(children::add)
-        imageView.let(children::add)
-        imageView.imageProperty().bind(editorViewModel.image)
+    val diagramImage = VBox().apply imageParent@{
+        minWidth = 0.0   // ← autorise la VBox à rétrécir
+        minHeight = 0.0
+        imageView.apply {
+            imageProperty().bind(editorViewModel.image)
+            isPreserveRatio = true
+
+            // Bind la taille d'affichage sur le VBox parent
+            fitWidthProperty().bind(this@imageParent.widthProperty())
+            fitHeightProperty().bind(this@imageParent.heightProperty())
+        }.let(children::add)
     }
 
 }
