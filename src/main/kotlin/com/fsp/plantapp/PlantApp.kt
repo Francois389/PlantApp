@@ -7,6 +7,8 @@ import io.github.francois389.javaspringfx.launchApp
 @SpringBootApplication
 class PlantApp
 
-fun main() = launchApp<PlantApp>(title = "PlantApp") { navigator ->
-    navigator.navigateTo(MainView::class)
-}
+fun main() = launchApp<PlantApp>(
+    title = "PlantApp",
+    icons = listOf("/PlantApp_Logo.png"),
+    startingView = MainView::class
+)
