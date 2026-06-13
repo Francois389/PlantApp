@@ -1,4 +1,4 @@
-package com.fsp.plantapp.preview
+package com.fsp.plantapp.editor.preview
 
 import com.fsp.plantapp.diagram.DiagramService
 import io.github.francois389.javaspringfx.annotations.ViewModel

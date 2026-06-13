@@ -1,23 +1,25 @@
 package com.fsp.plantapp.editor
 
+import com.fsp.plantapp.editor.preview.PreviewView
 import io.github.francois389.javaspringfx.annotations.View
 import io.github.francois389.javaspringfx.navigation.IView
+import io.github.francois389.javaspringfx.navigation.Navigator
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.SplitPane
 import javafx.scene.control.TextArea
-import javafx.scene.image.ImageView
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 
 @View
 class EditorView(
-    private val editorViewModel: EditorViewModel
+    private val editorViewModel: EditorViewModel,
+    private val navigator: Navigator
 ) : IView {
     override fun createUI() = SplitPane(
         textArea,
-        diagramImage
+        navigator.findView(PreviewView::class)
     ).apply {
         setDividerPositions(0.3)
     }
@@ -33,21 +35,4 @@ class EditorView(
         }.let(children::add)
         alignment = Pos.CENTER
     }
-
-    val imageView: ImageView = ImageView()
-
-    val diagramImage = VBox().apply imageParent@{
-        minWidth = 0.0   // ← autorise la VBox à rétrécir
-        minHeight = 0.0
-        imageView.apply {
-            imageProperty().bind(editorViewModel.image)
-            isPreserveRatio = true
-
-            // Bind la taille d'affichage sur le VBox parent
-            fitWidthProperty().bind(this@imageParent.widthProperty().subtract(10.0))
-            fitHeightProperty().bind(this@imageParent.heightProperty().subtract(10.0))
-        }.let(children::add)
-        alignment = Pos.CENTER
-    }
-
 }

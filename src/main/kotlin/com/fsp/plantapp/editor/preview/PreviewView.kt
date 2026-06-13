@@ -1,4 +1,4 @@
-package com.fsp.plantapp.preview
+package com.fsp.plantapp.editor.preview
 
 import com.fsp.plantapp.ZoomControl
 import com.fsp.plantapp.util.estPositif
