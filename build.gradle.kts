@@ -24,7 +24,7 @@ tasks.withType<JavaCompile> {
 }
 
 application {
-    mainClass.set("com.fsp.plantapp.PlantApp")
+    mainClass.set("com.fsp.plantapp.Launcher")
 }
 kotlin {
     jvmToolchain(25)
