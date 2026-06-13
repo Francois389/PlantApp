@@ -2,11 +2,7 @@ package com.fsp.plantapp.editor
 
 import com.fsp.plantapp.diagram.DiagramService
 import io.github.francois389.javaspringfx.annotations.ViewModel
-import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import javafx.scene.image.Image
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 
 @ViewModel
 class EditorViewModel(
@@ -15,37 +11,17 @@ class EditorViewModel(
 
     val initialSource = diagramService.diagramSource
 
-    val diagramTitle = SimpleStringProperty()
+    val diagramTitle = SimpleStringProperty(diagramService.title)
     val diagramSource = SimpleStringProperty(initialSource)
-    val image = SimpleObjectProperty<Image>()
 
     init {
-        updateTitle(initialSource)
-        updateImage(initialSource)
         diagramSource.addListener { _, _, newValue ->
             newValue?.let {
                 diagramService.diagramSource = newValue
-                updateTitle(newValue)
-                updateImage(newValue)
             }
         }
-    }
-
-    private fun updateImage(source: String) {
-        val tempOut = ByteArrayOutputStream()
-        val isSuccess = diagramService.renderDiagram(tempOut)
-        if (isSuccess) {
-            image.set(Image(ByteArrayInputStream(tempOut.toByteArray())))
+        diagramService.addObserver {
+            diagramTitle.value = diagramService.title
         }
-        tempOut.close()
-    }
-
-    private fun updateTitle(souce: String) {
-        souce
-            .split("\n")
-            .firstOrNull { it.startsWith("title ") }
-            ?.substringAfter("title ")
-            ?.trim()
-            ?.let(diagramTitle::set)
     }
 }

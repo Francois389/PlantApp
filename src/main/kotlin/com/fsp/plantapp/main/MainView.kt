@@ -1,6 +1,7 @@
 package com.fsp.plantapp.main
 
 import com.fsp.plantapp.editor.EditorView
+import com.fsp.plantapp.exportation.ExportationView
 import io.github.francois389.javaspringfx.annotations.View
 import io.github.francois389.javaspringfx.navigation.IView
 import io.github.francois389.javaspringfx.navigation.Navigator
@@ -18,7 +19,7 @@ class MainView(
             Tab("Editor", navigator.findView(EditorView::class)).apply {
                 isClosable = false
             },
-            Tab("Export").apply {
+            Tab("Export", navigator.findView(ExportationView::class)).apply {
                 isClosable = false
             }
         )

@@ -22,8 +22,12 @@ class DiagramService : Observable<String>() {
     """.trimIndent()
         set(value) {
             field = value
+            updateTitle()
             notifyObservers(value)
         }
+
+    final var title: String = extractTitle() ?: ""
+        private set
 
     fun renderDiagram(output: OutputStream): Boolean {
         if (diagramSource.isBlank()) return false
@@ -40,5 +44,12 @@ class DiagramService : Observable<String>() {
         return String(output.toByteArray(), Charset.forName("UTF-8"))
     }
 
+    private fun updateTitle() = extractTitle()
+        ?.let { title = it }
 
+    private fun extractTitle(): String? = diagramSource
+        .split("\n")
+        .firstOrNull { it.startsWith("title ") }
+        ?.substringAfter("title ")
+        ?.trim()
 }
