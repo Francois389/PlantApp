@@ -12,6 +12,7 @@ version = "1.1.1"
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io")  }
     mavenLocal()
 }
 
@@ -37,6 +38,8 @@ javafx {
 dependencies {
     implementation("io.github.francois389:javaspringfx:0.2.1")
     implementation("net.sourceforge.plantuml:plantuml:1.2026.0")
+    implementation("com.github.hervegirod:fxsvgimage:1.7.3")
+    implementation("com.github.hervegirod:fxsvgimage:1.7.3:cssparser")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.platform:junit-platform-launcher:$junitVersion")
@@ -48,6 +51,7 @@ tasks.withType<Test> {
 }
 
 tasks.register<Copy>("copyDependencies") {
+    description = "Copy runtime dependencies and the main JAR to a temporary directory for jpackage."
     dependsOn("jar")
     from(configurations.runtimeClasspath)
     from(tasks.named("jar"))
@@ -55,6 +59,7 @@ tasks.register<Copy>("copyDependencies") {
 }
 
 tasks.register<Exec>("jpackage") {
+    description = "Package the application into a native installer using jpackage."
     dependsOn("copyDependencies")
 
     val buildDir = layout.buildDirectory.get().asFile
