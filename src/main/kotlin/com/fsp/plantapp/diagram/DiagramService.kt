@@ -26,6 +26,7 @@ class DiagramService : Observable<String>() {
         }
 
     fun renderDiagram(output: OutputStream): Boolean {
+        if (diagramSource.isBlank()) return false
         val reader = SourceStringReader(diagramSource)
         val isSuccess = reader.outputImage(output).description != null
         return isSuccess
