@@ -94,14 +94,23 @@ runtime {
 
         targetPlatformName = "current" // build pour l'OS courant
 
-        installerOptions = listOf(
-            "--description", "PlantUML diagram editor",
-            "--vendor", "fsp",
+        val linuxOption = listOf(
             "--linux-shortcut",
             "--linux-package-name", "plantapp",
             "--linux-app-category", "Development",
             "--resource-dir", "packaging/linux",
-            "--verbose",
         )
+
+        installerOptions = listOf(
+            "--description", "PlantUML diagram editor",
+            "--vendor", "fsp",
+            "--verbose",
+        ).let {
+            if (!isWindows) {
+                it + linuxOption
+            } else {
+                it
+            }
+        }
     }
 }
