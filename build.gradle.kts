@@ -1,98 +1,116 @@
 plugins {
     java
     application
-    id("org.jetbrains.kotlin.jvm") version "2.1.20"
-    id("org.openjfx.javafxplugin") version "0.1.0"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.javafx)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.badass.runtime)
 }
 
+fun getLastGitTag(): String {
+    return Runtime.getRuntime()
+        .exec(arrayOf("git", "tag", "--sort=-version:refname"))
+        .inputStream
+        .bufferedReader()
+        .readLine()
+        ?.removePrefix("v")
+        ?: System.getenv("PLANTAPP_VERSION")
+        ?: throw RuntimeException("No git tags found")
+}
+version = getLastGitTag()
 group = "com.fsp"
-version = "1.1.1"
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
     mavenLocal()
 }
-
-val junitVersion = "5.12.1"
-
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
 
 application {
-    mainClass.set("com.fsp.plantapp.PlantApp")
+    mainClass.set("com.fsp.plantapp.Launcher")
 }
+
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 javafx {
-    version = "21.0.6"
-    modules = listOf("javafx.controls", "javafx.fxml", "javafx.web")
+    version = "26"
+    modules = listOf("javafx.controls", "javafx.fxml")
 }
 
-val controlsFXVersion = "11.2.3"
-val junitLauncherVersion = "6.0.3"
-val plantumlVersion = "1.2026.0"
-val componentInscpectorVersion = "1.1.0"
 dependencies {
-    implementation("org.controlsfx:controlsfx:$controlsFXVersion")
-    implementation("net.sourceforge.plantuml:plantuml:$plantumlVersion")
-    implementation("com.tangorabox:component-inspector-fx:$componentInscpectorVersion")
+    implementation(libs.javaspringfx)
+    implementation(libs.plantuml)
+    implementation(libs.fxsvgimage)
+    implementation("com.github.hervegirod:fxsvgimage:1.7.3:cssparser")
 
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testImplementation("org.junit.platform:junit-platform-launcher:$junitLauncherVersion")
-
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.register<Copy>("copyDependencies") {
-    group = "CD"
-    description = "Copies dependencies to build files"
-    dependsOn("jar")
-    from(configurations.runtimeClasspath)
-    from(tasks.named("jar"))
-    into(layout.buildDirectory.dir("jpackage-input"))
+tasks.named("jpackageImage") {
+    dependsOn("runtime")
 }
 
-tasks.register<Exec>("jpackage") {
-    group = "CD"
-    description = """
-        Créer un installeur pour l'application en utilisant jpackage.
-         - Assure que les dépendances sont copiées dans le répertoire d'entrée.
-         - Récupère les JARs JavaFX depuis les dépendances résolues pour les inclure dans le module-path.
-         - Nettoie le répertoire de sortie avant de générer l'installeur.
-    """.trimIndent()
-    dependsOn("copyDependencies")
+runtime {
+    imageZip.set(project.file("${project.layout.buildDirectory.get()}/image.zip"))
 
-    val buildDir = layout.buildDirectory.get().asFile
-    val inputDir = "$buildDir/jpackage-input"
-    val outputDir = "$buildDir/jpackage-output"
+    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
 
-    // Récupère les JARs JavaFX depuis les dépendances résolues
-    val javafxJars = configurations.runtimeClasspath.get()
-    .filter { it.name.contains("javafx") }
-    .joinToString(":") { it.absolutePath }
-
-    doFirst {
-        file(outputDir).deleteRecursively()
-        file(outputDir).mkdirs()
-    }
-
-    commandLine(
-        "jpackage",
-        "--type", "app-image",
-        "--name", "PlantApp",
-        "--input", inputDir,
-        "--main-jar", "${project.name}-${project.version}.jar",
-        "--main-class", "com.fsp.plantapp.PlantApp",
-        "--module-path", javafxJars,
-        "--add-modules", "javafx.controls,javafx.fxml",
-        "--dest", outputDir
+    // Modules nécessaires pour Spring Boot + JavaFX
+    modules.set(
+        listOf(
+            "java.base", "java.desktop", "java.logging", "java.management",
+            "java.naming", "java.net.http", "java.sql", "java.xml",
+            "jdk.unsupported", "jdk.crypto.ec"
+        )
     )
+
+    jpackage {
+        imageName = "PlantApp"
+        skipInstaller = false
+        installerName = "PlantApp"
+        appVersion = project.version.toString()
+
+        val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+        val iconExt = if (isWindows) {
+            "src/main/resources/PlantApp_Logo.ico"
+        } else {
+            "src/main/resources/PlantApp_Logo.png"
+        }
+        val iconPath = project.file(iconExt).absolutePath
+        imageOptions = listOf("--icon", iconPath)
+
+        targetPlatformName = "current" // build pour l'OS courant
+
+        val linuxOption = listOf(
+            "--linux-shortcut",
+            "--linux-package-name", "plantapp",
+            "--linux-app-category", "Development",
+            "--resource-dir", "packaging/linux",
+        )
+
+        installerOptions = listOf(
+            "--description", "PlantUML diagram editor",
+            "--vendor", "fsp",
+            "--verbose",
+        ).let {
+            if (!isWindows) {
+                it + linuxOption
+            } else {
+                it
+            }
+        }
+    }
 }

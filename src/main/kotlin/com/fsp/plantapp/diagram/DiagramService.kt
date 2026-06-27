@@ -1,24 +1,55 @@
 package com.fsp.plantapp.diagram
 
-import com.fsp.plantapp.Observable
+import com.fsp.plantapp.observable.Observable
+import net.sourceforge.plantuml.FileFormat
+import net.sourceforge.plantuml.FileFormatOption
+import net.sourceforge.plantuml.SourceStringReader
+import org.springframework.stereotype.Service
+import java.io.ByteArrayOutputStream
+import java.io.OutputStream
+import java.nio.charset.Charset
 
-class DiagramService(
-    private val diagramRepository: InMemoryDiagramRepository,
-    private val listeners: MutableList<(() -> Unit)> = mutableListOf(),
-): Observable {
-    fun getDiagram(): PlantUMLDiagram {
-        return diagramRepository.get().clone()
+
+@Service
+class DiagramService : Observable<String>() {
+
+    var diagramSource: String = """
+        @startuml;
+        title Titre
+        Alice -> Bob: Hello
+        Bob -> Alice: Hi!
+        @enduml
+    """.trimIndent()
+        set(value) {
+            field = value
+            updateTitle()
+            notifyObservers(value)
+        }
+
+    final var title: String = extractTitle() ?: ""
+        private set
+
+    fun renderDiagram(output: OutputStream): Boolean {
+        if (diagramSource.isBlank()) return false
+        val reader = SourceStringReader(diagramSource)
+        val isSuccess = reader.outputImage(output).description != null
+        return isSuccess
     }
 
-    override fun update() = listeners.forEach { it() }
-
-    override fun addListener(listener: () -> Unit) {
-        listeners.add(listener)
+    fun getSVG(): String {
+        val reader = SourceStringReader(diagramSource)
+        val output = ByteArrayOutputStream()
+        reader.outputImage(output, FileFormatOption(FileFormat.SVG))
+        output.close()
+        return String(output.toByteArray(), Charset.forName("UTF-8"))
     }
 
-    fun updateDiagram(newDiagram: PlantUMLDiagram) {
-        diagramRepository.save(newDiagram)
-        update()
-    }
+    private fun updateTitle() = extractTitle()
+        ?.let { title = it }
 
+    private fun extractTitle(): String? = diagramSource
+        .split("\n")
+        .firstOrNull { it.startsWith("title ") }
+        ?.substringAfter("title ")
+        ?.trim()
 }

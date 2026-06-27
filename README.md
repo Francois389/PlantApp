@@ -1,12 +1,11 @@
 # PlantApp
 
-PlantApp est une application desktop en Kotlin et JavaFX pour écrire, prévisualiser et exporter des diagrammes PlantUML.
+PlantApp est une application desktop en Kotlin et JavaSpringFX pour écrire, prévisualiser et exporter des diagrammes PlantUML.
 
 L'application propose deux onglets principaux :
 
 - un éditeur qui met à jour le diagramme en temps réel à partir du code PlantUML ;
-- un écran d'export qui permet de générer un fichier PNG en conservant la source PlantUML dans les métadonnées de l'
-  image.
+- un écran d'export qui permet de générer un fichier PNG en conservant la source PlantUML dans les métadonnées de l'image.
 
 ## Fonctionnalités
 
@@ -18,28 +17,17 @@ L'application propose deux onglets principaux :
 <details>
 <summary>Screenshots</summary>
 
-![Main](./screenshot/Main.png "Main")
-![Main avec un titre](./screenshot/Main-Title.png "Main avec un titre")
-![Main avec un plus grand diagramme](./screenshot/Main-BiggerDiagram.png "Main avec un plus grand diagramme")
-![Export](./screenshot/Export.png "Export")
-![Export reussie](./screenshot/Export-Reussi.png "Export réussi")
-![Export echec](./screenshot/Export-Echec.png "Export échec")
+TODO
 
 </details>
 
 ## Stack technique
 
-- Kotlin 2.1.20
-- Java 21
-- JavaFX 21.0.6
+- Kotlin 2.4.0
+- Java 25
+- JavaSpringFX 0.2.1
+- JavaFX 26
 - PlantUML 1.2026.0
-
-## Prérequis
-
-- JDK 21 installé ;
-
-Le projet est configuré avec `jvmToolchain(21)`. En pratique, il vaut mieux exécuter Gradle avec une JDK 21 active. Sur
-un environnement où la JDK par défaut est plus récente, certaines tâches Gradle peuvent échouer au démarrage.
 
 ## Lancer le projet
 
@@ -80,32 +68,4 @@ Dans l'onglet `Export` :
 
 Le bouton `Detecter` recopie automatiquement le titre détecté depuis la source du diagramme courant.
 
-L'export produit un fichier PNG nommé `nomDuFichier.png`.
-
-## Structure du projet
-
-```text
-src/
-  main/
-    kotlin/com/fsp/plantapp/
-      PlantApp.kt                Point d'entrée JavaFX
-      Navigator.kt               Navigation et changement d'écran
-      main/MainView.kt           Onglets principaux
-      editor/                    Éditeur PlantUML
-      export/                    Écran d'export PNG
-      diagram/                   Modèle, rendu et service métier
-  test/
-    kotlin/com/fsp/plantapp/     Tests unitaires
-```
-
-## Architecture
-
-- `PlantApp` initialise l'application, le service de diagramme et les écrans.
-- `DiagramService` centralise l'état du diagramme courant et notifie les vues.
-- `PlantUMLDiagram` encapsule la source, le titre et l'image rendue.
-- `EditorViewModel` met à jour le rendu à chaque modification du texte.
-- `ExportViewModel` valide les champs et gère l'écriture du PNG exporté.
-
-## Points d'attention
-
-- l'export refuse d'écraser un fichier existant
+L'export produit un fichier PNG nommé `<nom du fichier>.png`.

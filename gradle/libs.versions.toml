@@ -1,0 +1,28 @@
+[versions]
+kotlin = "2.4.0"
+kotlin-spring = "2.1.20"
+javafx-plugin = "0.1.0"
+spring-boot = "4.0.6"
+javafx = "26"
+javaspringfx = "0.2.1"
+plantuml = "1.2026.0"
+fxsvgimage = "1.7.3"
+junit = "6.0.3"
+
+badass-runtime = "2.0.1"
+
+[libraries]
+javaspringfx = { module = "io.github.francois389:javaspringfx", version.ref = "javaspringfx" }
+plantuml = { module = "net.sourceforge.plantuml:plantuml", version.ref = "plantuml" }
+fxsvgimage = { module = "com.github.hervegirod:fxsvgimage", version.ref = "fxsvgimage" }
+
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin-spring" }
+javafx = { id = "org.openjfx.javafxplugin", version.ref = "javafx-plugin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+badass-runtime = { id = "org.beryx.runtime", version.ref = "badass-runtime" }
