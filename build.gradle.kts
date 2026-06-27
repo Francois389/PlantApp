@@ -85,7 +85,12 @@ runtime {
 
         // vendor = "fsp"
         // Icône (chemins différents selon l'OS)
-        imageOptions = listOf("--icon", "src/main/resources/PlantApp_Logo.png")
+        val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+        imageOptions = listOf(
+            "--icon",
+            if (isWindows) "src/main/resources/PlantApp_Logo.ico"
+            else "src/main/resources/PlantApp_Logo.png"
+        )
 
         targetPlatformName = "current" // build pour l'OS courant
 
