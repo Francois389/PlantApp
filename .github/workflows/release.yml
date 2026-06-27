@@ -7,6 +7,11 @@ on:
         description: "Version (ex: v1.2.3)"
         required: true
         type: string
+      draft:
+        description: "Mettre la release en draft"
+        required: false
+        type: boolean
+        default: false
   push:
     tags:
       - "v*.*.*"
@@ -18,7 +23,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-tags: true
 
@@ -73,7 +78,7 @@ jobs:
             artifact: "*.msi"
             artifact-name: installer-windows
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-tags: true
 
@@ -119,10 +124,10 @@ jobs:
           merge-multiple: true
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.prepare.outputs.version }}
           name: PlantApp ${{ needs.prepare.outputs.version }}
-          draft: false
+          draft: ${{ inputs.draft || false }}
           prerelease: false
           files: artifacts/*
