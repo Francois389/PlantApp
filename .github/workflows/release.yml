@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (ex: v1.2.3)"
+        required: true
+        type: string
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    name: Build ${{ matrix.os.name }} installer
+    runs-on: ${{ matrix.os.runner }}
+    strategy:
+      matrix:
+        os:
+          - name: Linux
+            runner: ubuntu-latest
+            artifact: "*.deb"
+            artifact-name: installer-linux
+          - name: Windows
+            runner: windows-latest
+            artifact: "*.msi"
+            artifact-name: installer-windows
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Display version
+        run: echo "Building version ${{ steps.version.outputs.version }}"
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'liberica'
+          java-package: jdk+fx
+
+      - name: Build installer
+        run: ./gradlew runtime jpackage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os.artifact-name }}
+          path: build/jpackage/${{ matrix.os.artifact }}
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installer-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: PlantApp ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+          files: artifacts/*
