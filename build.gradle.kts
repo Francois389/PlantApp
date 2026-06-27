@@ -83,14 +83,14 @@ runtime {
         installerName = "PlantApp"
         appVersion = project.version.toString()
 
-        // vendor = "fsp"
-        // Icône (chemins différents selon l'OS)
         val isWindows = System.getProperty("os.name").lowercase().contains("windows")
-        imageOptions = listOf(
-            "--icon",
-            if (isWindows) "src/main/resources/PlantApp_Logo.ico"
-            else "src/main/resources/PlantApp_Logo.png"
-        )
+        val iconExt = if (isWindows) {
+            "src/main/resources/PlantApp_Logo.ico"
+        } else {
+            "src/main/resources/PlantApp_Logo.png"
+        }
+        val iconPath = project.file(iconExt).absolutePath
+        imageOptions = listOf("--icon", iconPath)
 
         targetPlatformName = "current" // build pour l'OS courant
 
@@ -101,6 +101,7 @@ runtime {
             "--linux-package-name", "plantapp",
             "--linux-app-category", "Development",
             "--resource-dir", "packaging/linux",
+            "--verbose",
         )
     }
 }
