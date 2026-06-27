@@ -77,6 +77,10 @@ jobs:
             runner: windows-latest
             artifact: "*.msi"
             artifact-name: installer-windows
+          - name: macOS
+            runner: macos-latest
+            artifact: "*.dmg"
+            artifact-name: installer-macos
     steps:
       - uses: actions/checkout@v7
         with:

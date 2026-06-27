@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem.current
+
 plugins {
     java
     application
@@ -83,34 +85,46 @@ runtime {
         installerName = "PlantApp"
         appVersion = project.version.toString()
 
-        val isWindows = System.getProperty("os.name").lowercase().contains("windows")
-        val iconExt = if (isWindows) {
-            "src/main/resources/PlantApp_Logo.ico"
-        } else {
-            "src/main/resources/PlantApp_Logo.png"
+        val currentOs = current()
+        val isWindows = currentOs.isWindows
+        val isMac = currentOs.isMacOsX
+        val isLinux = currentOs.isLinux
+
+        val iconExt = when {
+            isWindows -> "src/main/resources/PlantApp_Logo.ico"
+            isMac -> "src/main/resources/PlantApp_Logo.icns"
+            else -> "src/main/resources/PlantApp_Logo.png"
         }
         val iconPath = project.file(iconExt).absolutePath
         imageOptions = listOf("--icon", iconPath)
 
         targetPlatformName = "current" // build pour l'OS courant
 
-        val linuxOption = listOf(
-            "--linux-shortcut",
-            "--linux-package-name", "plantapp",
-            "--linux-app-category", "Development",
-            "--resource-dir", "packaging/linux",
-        )
 
         installerOptions = listOf(
             "--description", "PlantUML diagram editor",
             "--vendor", "fsp",
             "--verbose",
-        ).let {
-            if (!isWindows) {
-                it + linuxOption
-            } else {
-                it
-            }
+        ) + when {
+            isMac -> listOf(
+                "--mac-package-name", "PlantApp",
+            )
+
+            isLinux -> listOf(
+                "--linux-shortcut",
+                "--linux-package-name", "plantapp",
+                "--linux-app-category", "Development",
+                "--resource-dir", "packaging/linux",
+            )
+
+            isWindows -> listOf(
+                "--win-shortcut",
+                "--win-menu",
+                "--win-dir-chooser",
+                "--win-shortcut-prompt",
+            )
+
+            else -> emptyList()
         }
     }
 }
