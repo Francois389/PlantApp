@@ -1,14 +1,18 @@
 package com.fsp.plantapp.export
 
 import com.fsp.plantapp.diagram.DiagramService
+import com.fsp.plantapp.util.capitalize
+import com.fsp.plantapp.util.removeAccent
 import io.github.francois389.javaspringfx.annotations.ViewModel
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import org.w3c.dom.Element
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.Locale.getDefault
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageTypeSpecifier
@@ -19,10 +23,12 @@ import javax.xml.parsers.DocumentBuilderFactory
 class ExportViewModel(
     private val diagramService: DiagramService
 ) {
-    val fileName = SimpleStringProperty("")
+    val fileNameInput = SimpleStringProperty("")
     val directoryDestination = SimpleStringProperty("")
     val errorText = SimpleStringProperty("")
     val successText = SimpleStringProperty("")
+    val fileNameFormat = SimpleStringProperty("")
+    val formatSelected = SimpleObjectProperty<NameFormat>(NameFormat.Default)
 
     val overwriteExistingFile = SimpleBooleanProperty(false)
     val alreadyExistingFile = SimpleBooleanProperty(false)
@@ -33,8 +39,12 @@ class ExportViewModel(
         detectTitleFromSource()
         updateFeedbackText()
 
-        fileName.addListener { _, _, _ ->
+        formatSelected.addListener { _, _, _ ->
+            updateFileNameFormat()
+        }
+        fileNameInput.addListener { _, _, _ ->
             updateFeedbackText()
+            updateFileNameFormat()
         }
         directoryDestination.addListener { _, _, _ ->
             updateFeedbackText()
@@ -44,11 +54,15 @@ class ExportViewModel(
         }
     }
 
+    private fun updateFileNameFormat() {
+        fileNameFormat.value = formatSelected.value.formatteur(fileNameInput.value)
+    }
+
     private fun updateFeedbackText() {
         successText.value = ""
         overwriteExistingFile.value = false
         when {
-            fileName.value.isEmpty() -> {
+            fileNameInput.value.isEmpty() -> {
                 entreManquante.value = false
                 errorText.value = "Erreur : Le nom du fichier ne peut pas être vide."
             }
@@ -72,7 +86,7 @@ class ExportViewModel(
     }
 
     fun detectTitleFromSource() {
-        fileName.value = diagramService.title
+        fileNameInput.value = diagramService.title
     }
 
     fun exportDiagramm() {
@@ -84,7 +98,7 @@ class ExportViewModel(
     }
 
     private val diagramFile: File
-        get() = File("${directoryDestination.value}/${fileName.value}.png")
+        get() = File("${directoryDestination.value}/${fileNameInput.value}.png")
 
     private fun saveDiagramToFile(path: String) {
         val diagramSource = diagramService.diagramSource
@@ -142,5 +156,38 @@ class ExportViewModel(
         writer.write(metadata, IIOImage(bufferedImage, null, metadata), writeParam)
         imageOutputStream.close()
         writer.dispose()
+    }
+
+    enum class NameFormat(
+        val formatteur: (name: String) -> String
+    ) {
+        Default({ it }),
+        SansAccent({ name ->
+            name.removeAccent()
+        }),
+        CamelCase({ name ->
+            name
+                .split(" ")
+                .joinToString(separator = "") {
+                    it
+                        .removeAccent()
+                        .filter(Char::isJavaIdentifierPart)
+                        .capitalize()
+                }
+        }),
+        SnakeCase({ name ->
+            name
+                .split(" ")
+                .map {
+                    it
+                        .removeAccent()
+                        .filter(Char::isJavaIdentifierPart)
+                        .lowercase(getDefault())
+                        .trim()
+                }
+                .filterNot { it.isBlank() }
+                .joinToString(separator = "_")
+        })
+        ;
     }
 }

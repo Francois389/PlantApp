@@ -39,7 +39,7 @@ class ExportationView(
         children.addAll(
             Label("Nom du fichier :"),
             TextField().apply {
-                textProperty().bindBidirectional(viewModel.fileName)
+                textProperty().bindBidirectional(viewModel.fileNameInput)
                 promptText = "DiagSequence"
                 HBox.setHgrow(this, Priority.ALWAYS)
             },
