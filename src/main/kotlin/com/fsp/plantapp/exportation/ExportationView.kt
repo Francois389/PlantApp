@@ -1,12 +1,14 @@
 package com.fsp.plantapp.exportation
 
 import com.fsp.plantapp.export.ExportViewModel
+import com.fsp.plantapp.export.ExportViewModel.NameFormat
 import com.fsp.plantapp.util.Button
 import com.fsp.plantapp.util.Insets
 import io.github.francois389.javaspringfx.annotations.View
 import io.github.francois389.javaspringfx.navigation.IView
 import javafx.geometry.Pos
 import javafx.scene.control.CheckBox
+import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
@@ -14,6 +16,7 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.text.Text
 import javafx.stage.DirectoryChooser
+import javafx.util.StringConverter
 
 @View
 class ExportationView(
@@ -26,11 +29,34 @@ class ExportationView(
         children.addAll(
             Text("Exportation du diagramme"),
             fileNameField,
+            fileNameForamtteField,
             destinationDirectoryField,
             exporterBtn,
             errorText,
             successText,
         )
+    }
+
+    val formatSelection = ChoiceBox<NameFormat>().apply {
+        items.setAll(NameFormat.entries)
+        valueProperty().bindBidirectional(viewModel.formatSelected)
+        converter = object : StringConverter<NameFormat>() {
+
+            val map = mapOf(
+                NameFormat.Default to "Défaut",
+                NameFormat.SansAccent to "Sans accent",
+                NameFormat.CamelCase to "CamelCase",
+                NameFormat.SnakeCase to "snake_case"
+            )
+
+            override fun toString(format: NameFormat?): String? = map[format]
+
+            override fun fromString(string: String?): NameFormat = map
+                .entries
+                .first { it.value == string }
+                .key
+
+        }
     }
 
     val fileNameField = HBox().apply {
@@ -48,6 +74,21 @@ class ExportationView(
             }
         )
     }
+
+    val fileNameForamtteField = HBox().apply {
+        spacing = 5.0
+        alignment = Pos.CENTER_LEFT
+        children.addAll(
+            formatSelection,
+            Label("Nom du fichier formatté :"),
+            TextField().apply {
+                isEditable = false
+                textProperty().bind(viewModel.fileNameFormat)
+                HBox.setHgrow(this, Priority.ALWAYS)
+            }
+        )
+    }
+
     val destinationDirectoryField = HBox().apply {
         spacing = 5.0
         alignment = Pos.CENTER_LEFT
@@ -88,12 +129,20 @@ class ExportationView(
             )
         }.let(children::add)
 
-        CheckBox("Écraser le fichier existant").apply {
-            selectedProperty().bindBidirectional(viewModel.overwriteExistingFile)
+        HBox().apply {
+            spacing = 5.0
+            alignment = Pos.CENTER
+
             visibleProperty().bind(viewModel.alreadyExistingFile)
             managedProperty().bind(visibleProperty())
-        }.let(children::add)
 
+            children.addAll(
+                CheckBox("Écraser le fichier existant").apply {
+                    selectedProperty().bindBidirectional(viewModel.overwriteExistingFile)
+                },
+                Button("Rafraichir", viewModel::refreshFileExistsOnDisk)
+            )
+        }.let(children::add)
     }
     val errorText = Text().apply {
         textProperty().bind(viewModel.errorText)
