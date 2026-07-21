@@ -4,6 +4,9 @@ import com.fsp.plantapp.diagram.DiagramService
 import com.fsp.plantapp.util.capitalize
 import com.fsp.plantapp.util.removeAccent
 import io.github.francois389.javaspringfx.annotations.ViewModel
+import javafx.beans.binding.Bindings
+import javafx.beans.binding.BooleanBinding
+import javafx.beans.binding.StringBinding
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -25,64 +28,64 @@ class ExportViewModel(
 ) {
     val fileNameInput = SimpleStringProperty("")
     val directoryDestination = SimpleStringProperty("")
-    val errorText = SimpleStringProperty("")
     val successText = SimpleStringProperty("")
-    val fileNameFormat = SimpleStringProperty("")
     val formatSelected = SimpleObjectProperty<NameFormat>(NameFormat.Default)
-
     val overwriteExistingFile = SimpleBooleanProperty(false)
-    val alreadyExistingFile = SimpleBooleanProperty(false)
-    val entreManquante = SimpleBooleanProperty(false)
 
+    /**
+     * Relais pour fournir à JavaFX une valeur à observer
+     */
+    private val fileExistsOnDisk = SimpleBooleanProperty(false)
+
+    val fileNameFormat: StringBinding = Bindings.createStringBinding(
+        { formatSelected.value.formatteur(fileNameInput.value) },
+        formatSelected, fileNameInput
+    )
+    val entreManquante: BooleanBinding = Bindings.createBooleanBinding(
+        { fileNameInput.value.isEmpty() || directoryDestination.value.isEmpty() },
+        fileNameInput, directoryDestination
+    )
+    val alreadyExistingFile: BooleanBinding = Bindings.createBooleanBinding(
+        { fileExistsOnDisk.value && !entreManquante.value },
+        fileExistsOnDisk, entreManquante
+    )
+    val errorText: StringBinding = Bindings.createStringBinding(
+        {
+            when {
+                fileNameInput.value.isEmpty() ->
+                    "Erreur : Le nom du fichier ne peut pas être vide."
+
+                directoryDestination.value.isEmpty() ->
+                    "Erreur : Le répertoire de destination ne peut pas être vide."
+
+                alreadyExistingFile.value ->
+                    "Erreur : Un fichier avec le même nom existe déjà à cet emplacement."
+
+                else -> ""
+            }
+        },
+        fileNameInput, directoryDestination, alreadyExistingFile
+    )
 
     init {
         detectTitleFromSource()
-        updateFeedbackText()
+        refreshFileExistsOnDisk()
 
-        formatSelected.addListener { _, _, _ ->
-            updateFileNameFormat()
-        }
-        fileNameInput.addListener { _, _, _ ->
-            updateFeedbackText()
-            updateFileNameFormat()
+        fileNameFormat.addListener { _, _, _ ->
+            successText.value = ""
+            refreshFileExistsOnDisk()
         }
         directoryDestination.addListener { _, _, _ ->
-            updateFeedbackText()
+            successText.value = ""
+            refreshFileExistsOnDisk()
         }
         diagramService.addObserver {
             detectTitleFromSource()
         }
     }
 
-    private fun updateFileNameFormat() {
-        fileNameFormat.value = formatSelected.value.formatteur(fileNameInput.value)
-    }
-
-    private fun updateFeedbackText() {
-        successText.value = ""
-        overwriteExistingFile.value = false
-        when {
-            fileNameInput.value.isEmpty() -> {
-                entreManquante.value = false
-                errorText.value = "Erreur : Le nom du fichier ne peut pas être vide."
-            }
-
-            directoryDestination.value.isEmpty() -> {
-                entreManquante.value = false
-                errorText.value = "Erreur : Le répertoire de destination ne peut pas être vide."
-            }
-
-            diagramFile.exists() -> {
-                alreadyExistingFile.value = true
-                errorText.value = "Erreur : Un fichier avec le même nom existe déjà à cet emplacement."
-            }
-
-            else -> {
-                alreadyExistingFile.value = false
-                entreManquante.value = false
-                errorText.value = ""
-            }
-        }
+    fun refreshFileExistsOnDisk() {
+        fileExistsOnDisk.value = diagramFile.exists()
     }
 
     fun detectTitleFromSource() {
@@ -91,14 +94,14 @@ class ExportViewModel(
 
     fun exportDiagramm() {
         if (diagramFile.exists() && overwriteExistingFile.value.not()) {
-            errorText.value = "Erreur : Un fichier avec le même nom existe déjà à cet emplacement."
+            refreshFileExistsOnDisk()
         } else {
             saveDiagramToFile(diagramFile.path)
         }
     }
 
     private val diagramFile: File
-        get() = File("${directoryDestination.value}/${fileNameInput.value}.png")
+        get() = File("${directoryDestination.value}/${fileNameFormat.value}.png")
 
     private fun saveDiagramToFile(path: String) {
         val diagramSource = diagramService.diagramSource
@@ -113,15 +116,16 @@ class ExportViewModel(
 
                 writeImageToFile(bufferedImage, path, diagramSource)
 
-                errorText.value = ""
                 successText.value = "Diagramme exporté avec succès à : $path"
             } else {
-                errorText.value = "Une erreur est survenue lors de la génération du diagramme." +
-                        "\n Vérifier que le diagramme est correctement généré."
                 successText.value = ""
+                println(
+                    "Une erreur est survenue lors de la génération du diagramme." +
+                            " Vérifier que le diagramme est correctement généré."
+                )
             }
         } catch (e: Exception) {
-            errorText.value = "Erreur lors de la sauvegarde : ${e.message}"
+            successText.value = ""
             println(e.message)
         }
     }
