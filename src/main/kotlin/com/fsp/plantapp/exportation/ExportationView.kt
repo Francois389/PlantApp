@@ -17,6 +17,7 @@ import javafx.scene.layout.VBox
 import javafx.scene.text.Text
 import javafx.stage.DirectoryChooser
 import javafx.util.StringConverter
+import java.io.File
 
 @View
 class ExportationView(
@@ -101,10 +102,12 @@ class ExportationView(
             },
             Button("Parcourir...") {
                 val directorieChooser = DirectoryChooser()
-                directorieChooser.title = "Sélectionner le dossier où exporter les tâches"
+                viewModel.directoryDestination
+                    .takeIf { it.value.isNotEmpty() }
+                    ?.let { directorieChooser.initialDirectory = File(it.value) }
+                directorieChooser.title = "Sélectionner le dossier où exporter le diagramme"
 
-                val selectedFile = directorieChooser.showDialog(this.scene.window)
-                selectedFile?.let {
+                directorieChooser.showDialog(this.scene.window)?.let {
                     viewModel.directoryDestination.value = it.absolutePath
                 }
             }
