@@ -6,6 +6,7 @@ import com.fsp.plantapp.util.Button
 import com.fsp.plantapp.util.Insets
 import io.github.francois389.javaspringfx.annotations.View
 import io.github.francois389.javaspringfx.navigation.IView
+import javafx.beans.binding.Bindings
 import javafx.geometry.Pos
 import javafx.scene.control.CheckBox
 import javafx.scene.control.ChoiceBox
@@ -23,7 +24,15 @@ import java.io.File
 class ExportationView(
     private val viewModel: ExportViewModel
 ) : IView {
+
+    init {
+        viewModel.erreurs.addListener { _, _, erreurs ->
+            updateErreur(erreurs)
+        }
+    }
+
     override fun createUI() = VBox().apply {
+        updateErreur(viewModel.erreurs.value)
         spacing = 10.0
         padding = Insets(100.0)
         alignment = Pos.TOP_CENTER
@@ -69,6 +78,16 @@ class ExportationView(
                 textProperty().bindBidirectional(viewModel.fileNameInput)
                 promptText = "DiagSequence"
                 HBox.setHgrow(this, Priority.ALWAYS)
+                styleProperty().bind(
+                    Bindings.createStringBinding(
+                        {
+                            if (viewModel.erreurs.value.contains(ExportViewModel.Erreur.FileNameEmpty)) {
+                                "-fx-border-color: red;"
+                            } else ""
+                        },
+                        viewModel.erreurs
+                    )
+                )
             },
             Button("Detecter") {
                 viewModel.detectTitleFromSource()
@@ -99,6 +118,17 @@ class ExportationView(
                 textProperty().bindBidirectional(viewModel.directoryDestination)
                 promptText = "/home/john/diagram"
                 HBox.setHgrow(this, Priority.ALWAYS)
+
+                styleProperty().bind(
+                    Bindings.createStringBinding(
+                        {
+                            if (viewModel.erreurs.value.contains(ExportViewModel.Erreur.DirectoryEmpty)) {
+                                "-fx-border-color: red;"
+                            } else ""
+                        },
+                        viewModel.erreurs
+                    )
+                )
             },
             Button("Parcourir...") {
                 val directorieChooser = DirectoryChooser()
@@ -147,13 +177,23 @@ class ExportationView(
             )
         }.let(children::add)
     }
-    val errorText = Text().apply {
-        textProperty().bind(viewModel.errorText)
-        style = "-fx-fill: red;"
-    }
+    val errorText = Text().apply { style = "-fx-fill: red;" }
+
     val successText = Text().apply {
         textProperty().bind(viewModel.successText)
         style = "-fx-fill: green;"
         // TODO add fading animation to make it disappear after a few seconds
+    }
+
+    fun updateErreur(erreurs: Set<ExportViewModel.Erreur>) {
+        val message = erreurs.joinToString("\n") {
+            when (it) {
+                ExportViewModel.Erreur.FileNameEmpty -> "Le nom du fichier ne peut pas être vide."
+                ExportViewModel.Erreur.DirectoryEmpty -> "Le répertoire de destination ne peut pas être vide."
+                ExportViewModel.Erreur.FileExistOnDisk -> "Un fichier avec le même nom existe déjà à cet emplacement."
+            }
+        }
+        errorText.text = message
+        errorText.isVisible = erreurs.isNotEmpty()
     }
 }

@@ -6,6 +6,7 @@ import com.fsp.plantapp.util.removeAccent
 import io.github.francois389.javaspringfx.annotations.ViewModel
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
+import javafx.beans.binding.ObjectBinding
 import javafx.beans.binding.StringBinding
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -32,9 +33,7 @@ class ExportViewModel(
     val formatSelected = SimpleObjectProperty<NameFormat>(NameFormat.Default)
     val overwriteExistingFile = SimpleBooleanProperty(false)
 
-    /**
-     * Relais pour fournir à JavaFX une valeur à observer
-     */
+    /** Relais pour fournir à JavaFX une valeur à observer */
     private val fileExistsOnDisk = SimpleBooleanProperty(false)
 
     val fileNameFormat: StringBinding = Bindings.createStringBinding(
@@ -49,20 +48,13 @@ class ExportViewModel(
         { fileExistsOnDisk.value && !entreManquante.value },
         fileExistsOnDisk, entreManquante
     )
-    val errorText: StringBinding = Bindings.createStringBinding(
+    val erreurs: ObjectBinding<Set<Erreur>> = Bindings.createObjectBinding<Set<Erreur>>(
         {
-            when {
-                fileNameInput.value.isEmpty() ->
-                    "Erreur : Le nom du fichier ne peut pas être vide."
-
-                directoryDestination.value.isEmpty() ->
-                    "Erreur : Le répertoire de destination ne peut pas être vide."
-
-                alreadyExistingFile.value ->
-                    "Erreur : Un fichier avec le même nom existe déjà à cet emplacement."
-
-                else -> ""
-            }
+            setOfNotNull(
+                if (fileNameInput.value.isEmpty()) Erreur.FileNameEmpty else null,
+                if (directoryDestination.value.isEmpty()) Erreur.DirectoryEmpty else null,
+                if (alreadyExistingFile.value) Erreur.FileExistOnDisk else null,
+            )
         },
         fileNameInput, directoryDestination, alreadyExistingFile
     )
@@ -71,11 +63,11 @@ class ExportViewModel(
         detectTitleFromSource()
         refreshFileExistsOnDisk()
 
-        fileNameFormat.addListener { _, _, _ ->
+        fileNameFormat.addListener {
             successText.value = ""
             refreshFileExistsOnDisk()
         }
-        directoryDestination.addListener { _, _, _ ->
+        directoryDestination.addListener {
             successText.value = ""
             refreshFileExistsOnDisk()
         }
@@ -193,5 +185,12 @@ class ExportViewModel(
                 .joinToString(separator = "_")
         })
         ;
+    }
+
+    sealed interface Erreur {
+        object FileNameEmpty : Erreur
+        object DirectoryEmpty : Erreur
+        object FileExistOnDisk : Erreur
+
     }
 }
