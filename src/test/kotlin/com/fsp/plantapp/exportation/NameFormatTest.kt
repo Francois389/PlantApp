@@ -15,7 +15,7 @@ class NameFormatTest {
 
             val nomFormatte = Default.formatteur(nomOriginale)
 
-            assertEquals(nomOriginale, nomFormatte, "Default ne dois rien changé")
+            assertEquals(nomOriginale, nomFormatte, "Default ne doit rien changer")
         }
 
         @Test
