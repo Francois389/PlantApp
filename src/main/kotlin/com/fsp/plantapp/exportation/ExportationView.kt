@@ -80,7 +80,12 @@ class ExportationView(
                     KeyCode.DOWN, KeyCode.RIGHT -> 1
                     else -> 0
                 }
-                selectionModel.select(((currentIndex + increment + items.size) % items.size).coerceIn(0, items.size))
+if (items.isNotEmpty()) {
+    selectionModel.select(
+        ((currentIndex + increment + items.size) % items.size)
+            .coerceIn(0, items.size - 1)
+    )
+}
             }
         }
 
