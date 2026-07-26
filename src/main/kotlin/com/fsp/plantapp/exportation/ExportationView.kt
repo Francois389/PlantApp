@@ -12,6 +12,8 @@ import javafx.scene.control.CheckBox
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -65,7 +67,27 @@ class ExportationView(
                 .entries
                 .first { it.value == string }
                 .key
+        }
 
+        val arrowKeys = setOf(KeyCode.LEFT, KeyCode.RIGHT, KeyCode.UP, KeyCode.DOWN)
+
+        addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+            if (event.code in arrowKeys) {
+                event.consume()
+                val currentIndex = selectionModel.selectedIndex
+                val increment = when (event.code) {
+                    KeyCode.UP, KeyCode.LEFT -> -1
+                    KeyCode.DOWN, KeyCode.RIGHT -> 1
+                    else -> 0
+                }
+                selectionModel.select(((currentIndex + increment + items.size) % items.size).coerceIn(0, items.size))
+            }
+        }
+
+        addEventFilter(KeyEvent.KEY_RELEASED) { event ->
+            if (event.code in arrowKeys) {
+                event.consume()
+            }
         }
     }
 
