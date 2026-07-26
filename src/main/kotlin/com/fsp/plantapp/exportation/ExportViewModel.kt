@@ -36,28 +36,28 @@ class ExportViewModel(
     /** Relais pour fournir à JavaFX une valeur à observer */
     private val fileExistsOnDisk = SimpleBooleanProperty(false)
 
-    val fileNameFormat: StringBinding = Bindings.createStringBinding(
-        { formatSelected.value.formatteur(fileNameInput.value) },
-        formatSelected, fileNameInput
-    )
-    val entreManquante: BooleanBinding = Bindings.createBooleanBinding(
-        { fileNameInput.value.isEmpty() || directoryDestination.value.isEmpty() },
-        fileNameInput, directoryDestination
-    )
-    val alreadyExistingFile: BooleanBinding = Bindings.createBooleanBinding(
-        { fileExistsOnDisk.value && !entreManquante.value },
-        fileExistsOnDisk, entreManquante
-    )
-    val erreurs: ObjectBinding<Set<Erreur>> = Bindings.createObjectBinding<Set<Erreur>>(
-        {
-            setOfNotNull(
-                if (fileNameInput.value.isEmpty()) Erreur.FileNameEmpty else null,
-                if (directoryDestination.value.isEmpty()) Erreur.DirectoryEmpty else null,
-                if (alreadyExistingFile.value) Erreur.FileExistOnDisk else null,
-            )
-        },
-        fileNameInput, directoryDestination, alreadyExistingFile
-    )
+val fileNameFormat: StringBinding = Bindings.createStringBinding(
+    { (formatSelected.value ?: NameFormat.Default).formatteur(fileNameInput.value ?: "") },
+    formatSelected, fileNameInput
+)
+val entreManquante: BooleanBinding = Bindings.createBooleanBinding(
+    { fileNameInput.value.isNullOrEmpty() || directoryDestination.value.isNullOrEmpty() },
+    fileNameInput, directoryDestination
+)
+val alreadyExistingFile: BooleanBinding = Bindings.createBooleanBinding(
+    { fileExistsOnDisk.value && !entreManquante.value },
+    fileExistsOnDisk, entreManquante
+)
+val erreurs: ObjectBinding<Set<Erreur>> = Bindings.createObjectBinding<Set<Erreur>>(
+    {
+        setOfNotNull(
+            if (fileNameInput.value.isNullOrEmpty()) Erreur.FileNameEmpty else null,
+            if (directoryDestination.value.isNullOrEmpty()) Erreur.DirectoryEmpty else null,
+            if (alreadyExistingFile.value) Erreur.FileExistOnDisk else null,
+        )
+    },
+    fileNameInput, directoryDestination, alreadyExistingFile
+)
 
     init {
         detectTitleFromSource()
