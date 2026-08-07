@@ -43,7 +43,7 @@ kotlin {
 
 javafx {
     version = "26"
-    modules = listOf("javafx.controls", "javafx.fxml")
+    modules = listOf("javafx.controls")
 }
 
 dependencies {
@@ -71,13 +71,7 @@ runtime {
     options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
 
     // Modules nécessaires pour Spring Boot + JavaFX
-    modules.set(
-        listOf(
-            "java.base", "java.desktop", "java.logging", "java.management",
-            "java.naming", "java.net.http", "java.sql", "java.xml",
-            "jdk.unsupported", "jdk.crypto.ec"
-        )
-    )
+    modules.set(listOf("java.desktop"))
 
     jpackage {
         imageName = "PlantApp"
