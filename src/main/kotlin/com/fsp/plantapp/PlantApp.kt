@@ -1,7 +1,5 @@
 package com.fsp.plantapp
 
-import com.fsp.plantapp.main.MainView
-import com.fsp.plantapp.ouvrir.OuvrirView
 import io.github.francois389.javaspringfx.launchApp
 import org.springframework.boot.autoconfigure.SpringBootApplication
 
@@ -14,6 +12,6 @@ object Launcher {
     fun main(args: Array<String>) = launchApp<PlantApp>(
         title = "PlantApp",
         icons = listOf("/PlantApp_Logo.png"),
-        startingView = DiagramsTabView::class
+        startingView = MainView::class
     )
 }

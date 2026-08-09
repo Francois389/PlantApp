@@ -2,7 +2,6 @@ package com.fsp.plantapp
 
 import com.fsp.plantapp.diagram.Diagram
 import com.fsp.plantapp.diagram.DiagramService
-import com.fsp.plantapp.ouvrir.OuvrirView
 import io.github.francois389.javaspringfx.annotations.ViewModel
 import io.github.francois389.javaspringfx.navigation.Navigator
 import javafx.beans.property.SimpleBooleanProperty
