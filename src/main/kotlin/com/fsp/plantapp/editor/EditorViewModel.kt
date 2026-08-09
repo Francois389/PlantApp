@@ -1,27 +1,26 @@
 package com.fsp.plantapp.editor
 
-import com.fsp.plantapp.diagram.DiagramService
+import com.fsp.plantapp.diagram.Diagram
 import io.github.francois389.javaspringfx.annotations.ViewModel
 import javafx.beans.property.SimpleStringProperty
 
-@ViewModel
 class EditorViewModel(
-    private val diagramService: DiagramService
+    private val diagram: Diagram
 ) {
 
-    val initialSource = diagramService.diagramSource
+    val initialSource = diagram.diagramSource
 
-    val diagramTitle = SimpleStringProperty(diagramService.title)
+    val diagramTitle = SimpleStringProperty(diagram.title)
     val diagramSource = SimpleStringProperty(initialSource)
 
     init {
         diagramSource.addListener { _, _, newValue ->
             newValue?.let {
-                diagramService.diagramSource = newValue
+                diagram.diagramSource = newValue
             }
         }
-        diagramService.addObserver {
-            diagramTitle.value = diagramService.title
+        diagram.addObserver {
+            diagramTitle.value = diagram.title
         }
     }
 }

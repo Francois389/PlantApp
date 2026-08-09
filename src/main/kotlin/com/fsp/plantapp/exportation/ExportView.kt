@@ -1,5 +1,7 @@
 package com.fsp.plantapp.exportation
 
+import com.fsp.plantapp.Configuration
+import com.fsp.plantapp.diagram.Diagram
 import com.fsp.plantapp.export.ExportViewModel
 import com.fsp.plantapp.export.ExportViewModel.NameFormat
 import com.fsp.plantapp.util.Button
@@ -22,10 +24,15 @@ import javafx.stage.DirectoryChooser
 import javafx.util.StringConverter
 import java.io.File
 
-@View
-class ExportationView(
-    private val viewModel: ExportViewModel
+class ExportView(
+    configuration: Configuration,
+    private val diagram: Diagram
 ) : IView {
+
+    private val viewModel: ExportViewModel = ExportViewModel(
+        configuration,
+        diagram
+    )
 
     init {
         viewModel.erreurs.addListener { _, _, erreurs ->

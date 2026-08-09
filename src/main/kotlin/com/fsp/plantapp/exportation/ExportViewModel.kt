@@ -1,6 +1,7 @@
 package com.fsp.plantapp.export
 
-import com.fsp.plantapp.diagram.DiagramService
+import com.fsp.plantapp.Configuration
+import com.fsp.plantapp.diagram.Diagram
 import com.fsp.plantapp.util.capitalize
 import com.fsp.plantapp.util.removeAccent
 import io.github.francois389.javaspringfx.annotations.ViewModel
@@ -23,10 +24,12 @@ import javax.imageio.ImageTypeSpecifier
 import javax.imageio.metadata.IIOMetadataNode
 import javax.xml.parsers.DocumentBuilderFactory
 
-@ViewModel
 class ExportViewModel(
-    private val diagramService: DiagramService
+    private val configuration: Configuration,
+    private val diagram: Diagram
 ) {
+
+
     val fileNameInput = SimpleStringProperty("")
     val directoryDestination = SimpleStringProperty("")
     val successText = SimpleStringProperty("")
@@ -71,7 +74,7 @@ class ExportViewModel(
             successText.value = ""
             refreshFileExistsOnDisk()
         }
-        diagramService.addObserver {
+        diagram.addObserver {
             detectTitleFromSource()
         }
     }
@@ -81,7 +84,7 @@ class ExportViewModel(
     }
 
     fun detectTitleFromSource() {
-        fileNameInput.value = diagramService.title
+        fileNameInput.value = diagram.title
     }
 
     fun exportDiagramm() {
@@ -93,14 +96,14 @@ class ExportViewModel(
     }
 
     private val diagramFile: File
-        get() = File("${directoryDestination.value}/${fileNameFormat.value}.png")
+        get() = File("${directoryDestination.value}/${fileNameFormat.value}.${configuration.extension}")
 
     private fun saveDiagramToFile(path: String) {
-        val diagramSource = diagramService.diagramSource
+        val diagramSource = diagram.diagramSource
         try {
             // Lire le PNG depuis les bytes
             val tempOut = ByteArrayOutputStream()
-            val isSuccess = diagramService.renderDiagram(tempOut)
+            val isSuccess = diagram.renderDiagram(tempOut)
             tempOut.close()
 
             if (isSuccess) {

@@ -1,9 +1,10 @@
 package com.fsp.plantapp.editor.preview
 
 import com.fsp.plantapp.ZoomControl
+import com.fsp.plantapp.diagram.Diagram
 import com.fsp.plantapp.util.estPositif
-import io.github.francois389.javaspringfx.annotations.View
 import io.github.francois389.javaspringfx.navigation.IView
+import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.Parent
@@ -16,9 +17,9 @@ import javafx.scene.layout.VBox
 import org.girod.javafx.svgimage.SVGImage
 import org.girod.javafx.svgimage.SVGLoader
 
-@View
 class PreviewView(
-    private val previewViewModel: PreviewViewModel,
+    diagram: Diagram,
+    private val previewViewModel: PreviewViewModel = PreviewViewModel(diagram),
 ) : IView {
 
     val svgImageProperty = SimpleObjectProperty<SVGImage?>(null)
@@ -72,7 +73,9 @@ class PreviewView(
             warningLabels,
         )
         VBox.setVgrow(previewParent, Priority.ALWAYS)
-        updateDiagram(previewViewModel.svgDiagram.value)
+        Platform.runLater {
+            updateDiagram(previewViewModel.svgDiagram.value)
+        }
     }
 
     init {
@@ -86,8 +89,10 @@ class PreviewView(
     }
 
     private fun updateDiagram(newValue: String?) {
-        val svgImage = SVGLoader.load(newValue)
-            .apply { scale(previewViewModel.zoomLevel.value) }
-        svgImageProperty.set(svgImage)
+        newValue?.let {
+            SVGLoader.load(it)
+                .apply { scale(previewViewModel.zoomLevel.value) }
+        }
+            ?.let { svgImageProperty.set(it) }
     }
 }
