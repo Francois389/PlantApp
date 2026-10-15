@@ -47,7 +47,7 @@ L'installeur n'est pas signé : Windows peut afficher un avertissement SmartScre
 1. Téléchargez le fichier `PlantApp-<version>.dmg` depuis la [dernière release](https://github.com/Francois389/PlantApp/releases/latest).
 2. Ouvrez-le et glissez **PlantApp** dans le dossier **Applications**.
 
-L'application n'est ni signée ni notarisée : au premier lancement, macOS peut la bloquer. Faite un clic droit sur l'application, choisis **Ouvrir**, puis confirme. Sinon, autorisez-la dans **Réglages Système > Confidentialité et sécurité** en cliquant sur **Ouvrir quand même**.
+L'application n'est ni signée ni notarisée : au premier lancement, macOS peut la bloquer. Faites un clic droit sur l'application, choisissez **Ouvrir**, puis confirme. Sinon, autorisez-la dans **Réglages Système > Confidentialité et sécurité** en cliquant sur **Ouvrir quand même**.
 
 L'installeur est construit sur Apple Silicon (arm64) : il n'est pas garanti sur les Mac à processeur Intel.
 
@@ -166,3 +166,7 @@ Dans l'onglet `Export` :
 Le bouton `Detecter` recopie automatiquement le titre détecté depuis la source du diagramme courant.
 
 L'export produit un fichier PNG nommé `<nom du fichier>.png`.
+
+## Licence
+
+PlantApp est distribué sous licence [GNU GPL v3](LICENSE) (`GPL-3.0-only`).

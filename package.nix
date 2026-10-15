@@ -29,9 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    description = "Éditeur et exporteur de diagrammes PlantUML (JavaFX)";
+    description = "Éditeur de diagrammes PlantUML";
     mainProgram = "plantapp";
-    license = lib.licenses.mit; # à remplacer par la vraie licence
+    license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
   };
 })
