@@ -197,10 +197,39 @@ jobs:
           name: ${{ matrix.os.artifact-name }}
           path: build/jpackage/${{ matrix.os.artifact }}
 
+  nix:
+    name: Build Nix package
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Build package
+        run: nix build .#plantapp --print-build-logs
+
+      - name: Check executable
+        run: test -x result/bin/plantapp
+
+      - name: Check Nix package version
+        if: ${{ !inputs.skip_version_check }}
+        env:
+          EXPECTED: ${{ needs.prepare.outputs.version }}
+        run: |
+          actual="$(nix eval --raw .#plantapp.version)"
+          if [ "$actual" != "$EXPECTED" ]; then
+            echo "::error::Le paquet Nix est en version '$actual' mais la release demande '$EXPECTED'."
+            exit 1
+          fi
+
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [ prepare, build ]
+    needs: [ prepare, build, nix ]
     permissions:
       contents: write
     steps:
