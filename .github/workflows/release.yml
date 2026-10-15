@@ -12,6 +12,11 @@ on:
         required: false
         type: boolean
         default: false
+      skip_version_check:
+        description: "Ignorer la vérification tag / fichier VERSION (construit la version saisie même si VERSION est différent)"
+        required: false
+        type: boolean
+        default: false
   push:
     tags:
       - "v*.*.*"
@@ -21,23 +26,101 @@ jobs:
     name: Prepare
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.tag.outputs.value }}
+      version: ${{ steps.version.outputs.value }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-tags: true
 
-      - name: Resolve version
-        id: version
+      # Les valeurs saisies passent par env (jamais interpolées dans le script)
+      # pour éviter toute injection de commandes depuis une saisie manuelle.
+      - name: Read requested tag
+        id: raw
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "tag=$INPUT_VERSION" >> "$GITHUB_OUTPUT"
           else
-            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Normalize tag
+        id: tag
+        env:
+          RAW_TAG: ${{ steps.raw.outputs.tag }}
+        run: |
+          tag="$(printf '%s' "$RAW_TAG" | tr -d '[:space:]')"
+          if [ "$tag" != "$RAW_TAG" ]; then
+            echo "::warning::Le tag '$RAW_TAG' contenait des espaces, corrigé en '$tag'."
+          fi
+
+          case "$tag" in
+            V*)
+              echo "::warning::Le tag '$tag' commence par un 'V' majuscule, corrigé en 'v${tag#V}'."
+              tag="v${tag#V}"
+              ;;
+            v*)
+              ;;
+            *)
+              echo "::warning::Le tag '$tag' n'a pas de préfixe 'v', corrigé en 'v$tag'."
+              tag="v$tag"
+              ;;
+          esac
+
+          echo "value=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tag format
+        env:
+          TAG: ${{ steps.tag.outputs.value }}
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version invalide '$TAG' (format attendu : vX.Y.Z)"
+            exit 1
+          fi
+
+      - name: Derive version from tag
+        id: version
+        env:
+          TAG: ${{ steps.tag.outputs.value }}
+        run: echo "value=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Read VERSION file
+        id: file
+        run: |
+          file_version="$(tr -d '[:space:]' < VERSION 2>/dev/null || true)"
+
+          case "$file_version" in
+            [vV]*)
+              echo "::warning::Le fichier VERSION contient '$file_version' avec un préfixe 'v' : il ne doit contenir que '${file_version#[vV]}'. Pense à le corriger dans le dépôt."
+              file_version="${file_version#[vV]}"
+              ;;
+          esac
+
+          echo "value=$file_version" >> "$GITHUB_OUTPUT"
+
+      - name: Check tag / VERSION consistency
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+          FILE_VERSION: ${{ steps.file.outputs.value }}
+          SKIP_CHECK: ${{ inputs.skip_version_check }}
+        run: |
+          if [ "$FILE_VERSION" = "$VERSION" ]; then
+            exit 0
+          fi
+
+          msg="Incohérence : la release demande '$VERSION' mais le fichier VERSION contient '${FILE_VERSION:-<absent ou vide>}'. Mets à jour VERSION avant de tagger."
+          if [ "$SKIP_CHECK" = "true" ]; then
+            echo "::warning::$msg Vérification ignorée (skip_version_check), la version '$VERSION' sera construite."
+          else
+            echo "::error::$msg"
+            exit 1
           fi
 
       - name: Display version
-        run: echo "Building version ${{ steps.version.outputs.version }}"
+        run: echo "Building version ${{ steps.version.outputs.value }} (tag ${{ steps.tag.outputs.value }})"
 
       - uses: actions/setup-java@v5.2.0
         with:
@@ -60,7 +143,7 @@ jobs:
       - name: Check compilation
         run: ./gradlew compileKotlin
         env:
-          PLANTAPP_VERSION: ${{ steps.version.outputs.version }}
+          PLANTAPP_VERSION: ${{ steps.version.outputs.value }}
 
   build:
     name: Build ${{ matrix.os.name }} installer
@@ -130,8 +213,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ needs.prepare.outputs.version }}
-          name: PlantApp ${{ needs.prepare.outputs.version }}
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: PlantApp ${{ needs.prepare.outputs.tag }}
           draft: ${{ inputs.draft || false }}
           prerelease: false
           files: artifacts/*

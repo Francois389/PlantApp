@@ -3,7 +3,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "plantapp";
-  version = "0.1.0"; # à synchroniser avec ton dernier tag
+  version = lib.fileContents ./VERSION;
 
   src = lib.cleanSource ./.;
 
