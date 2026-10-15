@@ -94,8 +94,8 @@ jobs:
 
           case "$file_version" in
             [vV]*)
-              echo "::warning::Le fichier VERSION contient '$file_version' avec un préfixe 'v' : il ne doit contenir que '${file_version#[vV]}'. Pense à le corriger dans le dépôt."
-              file_version="${file_version#[vV]}"
+               echo "::error::Le fichier VERSION doit contenir uniquement la version sans préfixe 'v' (trouvé '$file_version')."
+               exit 1
               ;;
           esac
 
