@@ -10,16 +10,14 @@ plugins {
     alias(libs.plugins.badass.runtime)
 }
 
-fun getLastGitTag(): String {
-    return Runtime.getRuntime()
-        .exec(arrayOf("git", "tag", "--sort=-version:refname"))
-        .inputStream
-        .bufferedReader()
-        .readLine()
-        ?.removePrefix("v")
-        ?: System.getenv("PLANTAPP_VERSION")
+fun getLastGitTag(): String =
+    System.getenv("PLANTAPP_VERSION")
+        ?: runCatching {
+            Runtime.getRuntime()
+                .exec(arrayOf("git", "tag", "--sort=-version:refname"))
+                .inputStream.bufferedReader().readLine()?.removePrefix("v")
+        }.getOrNull()
         ?: throw RuntimeException("No git tags found")
-}
 version = getLastGitTag()
 group = "com.fsp"
 
