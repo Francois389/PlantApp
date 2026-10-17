@@ -82,9 +82,11 @@ sudo apt remove plantapp
 #### Nix et NixOS
 
 <details>
-<summary>Détails de l'installation NixOS</summary>
+<summary>Détails de l'installation Nix et NixOS</summary>
 
-Le dépôt fournit un flake. Pour lancer PlantApp sans l'installer :
+Le dépôt fournit un flake. Les flakes doivent être activés (`experimental-features = nix-command flakes`).
+
+##### Sans installer (essai rapide)
 
 ```bash
 nix run github:Francois389/PlantApp
@@ -96,25 +98,102 @@ Pour utiliser une version précise, ajoutez le tag de la release :
 nix run github:Francois389/PlantApp/vX.Y.Z
 ```
 
-Pour l'installer dans le profil utilisateur :
+##### Dans le profil utilisateur (hors configuration déclarative)
 
 ```bash
 nix profile install github:Francois389/PlantApp
 ```
 
-Sur NixOS, ajoute le flake dans les `inputs` de la configuration, puis le paquet dans les paquets système :
+##### Sur NixOS avec Home Manager (recommandé)
+
+Le paquet est installé pour l'utilisateur, via `home.packages`. Il y a trois fichiers à modifier.
+
+**1. `flake.nix`** : déclarez l'input, récupérez-le dans `outputs`, puis passez-le à Home Manager avec `extraSpecialArgs`.
+
+```nix
+{
+  inputs = {
+    # ... nixpkgs, home-manager, etc.
+    plantapp.url = "github:Francois389/PlantApp";
+  };
+
+  outputs = { self, nixpkgs, home-manager, plantapp, ... }: {
+    nixosConfigurations.ma-machine = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./configuration.nix
+        home-manager.nixosModules.home-manager
+        {
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            users.mon-utilisateur = import ./home.nix;
+            extraSpecialArgs = {
+              inherit plantapp;   # rend `plantapp` disponible dans home.nix
+            };
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+**2. `home.nix`** : ajoutez `plantapp` aux arguments du module, puis le paquet dans `home.packages`.
+
+```nix
+{ config, pkgs, plantapp, ... }:
+
+{
+  home.packages = [
+    plantapp.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ];
+}
+```
+
+Home Manager fusionne les listes : cette définition peut cohabiter avec une autre déclaration `home.packages` existante.
+
+**3. Appliquez la configuration** :
+
+```bash
+sudo nixos-rebuild switch --flake .#ma-machine
+```
+
+##### Sur NixOS sans Home Manager (paquet système)
+
+Pour installer PlantApp pour tous les utilisateurs, passez l'input aux modules NixOS avec `specialArgs` (et non `extraSpecialArgs`, qui ne concerne que Home Manager) :
 
 ```nix
 # flake.nix
-inputs.plantapp.url = "github:Francois389/PlantApp";
-
-# configuration.nix (inputs doit être passé via specialArgs)
-environment.systemPackages = [
-  inputs.plantapp.packages.${pkgs.stdenv.hostPlatform.system}.default
-];
+outputs = { self, nixpkgs, plantapp, ... }: {
+  nixosConfigurations.ma-machine = nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    specialArgs = { inherit plantapp; };
+    modules = [ ./configuration.nix ];
+  };
+};
 ```
 
-Les flakes doivent être activés (`experimental-features = nix-command flakes`).
+```nix
+# configuration.nix
+{ config, pkgs, plantapp, ... }:
+
+{
+  environment.systemPackages = [
+    plantapp.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ];
+}
+```
+
+##### Mettre à jour PlantApp
+
+Le flake est verrouillé dans `flake.lock`. Pour récupérer la dernière version de PlantApp :
+
+```bash
+nix flake update plantapp
+```
+
+Puis relancez le `nixos-rebuild switch`.
 
 </details>
 
